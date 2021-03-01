@@ -1,0 +1,11 @@
+name: order-web
+memory: 1024M
+instances: 1
+path: ./target/order-web-0.0.1-SNAPSHOT.jar
+buildpack: java_buildpack
+services:
+- rabbit-events
+- discovery-service
+disk_quota: 1024M
+host: order-event-web
+domain: cfapps.io

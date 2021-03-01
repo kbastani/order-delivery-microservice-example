@@ -1,0 +1,10 @@
+language: java
+jdk:
+- oraclejdk8
+services:
+- redis
+- docker
+install: mvn clean install -DskipDockerBuild -Dlogging.level.org=error
+before_install:
+- docker pull spotify/kafka
+- docker run -d -p 2181:2181 -p 9092:9092 --env ADVERTISED_HOST=127.0.0.1 --env ADVERTISED_PORT=9092 spotify/kafka

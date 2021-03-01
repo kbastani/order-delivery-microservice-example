@@ -1,0 +1,9 @@
+{
+  "groups": [
+    {
+      "name": "amazon",
+      "type": "amazon.aws.AmazonProperties",
+      "sourceType": "amazon.aws.AmazonProperties"
+    }
+  ]
+}

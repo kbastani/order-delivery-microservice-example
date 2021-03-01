@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+  kafka:
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "29092:29092/tcp"
+    deploy:
+      replicas: 1
+  zookeeper:
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "32181:32181/tcp"
+    deploy:
+      replicas: 1
+  pinot:
+    image: apachepinot/pinot:0.7.0-SNAPSHOT-21b83d9ea-20210204-jdk11
+    command: "QuickStart -type stream"
+    ports:
+      - "9000:9000/tcp"
+      - "8000:8000/tcp"

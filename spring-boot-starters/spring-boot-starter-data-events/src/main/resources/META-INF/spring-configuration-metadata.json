@@ -1,0 +1,9 @@
+{
+  "groups": [
+    {
+      "name": "event",
+      "type": "demo.event.EventProperties",
+      "sourceType": "demo.event.EventProperties"
+    }
+  ]
+}

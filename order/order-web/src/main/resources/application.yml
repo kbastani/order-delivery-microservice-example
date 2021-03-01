@@ -1,0 +1,103 @@
+spring:
+  profiles:
+    active: development
+  cloud:
+    stream:
+      bindings:
+        output:
+          binder: kafka
+          destination: order
+          contentType: 'application/json'
+          group: order-group
+          producer:
+            requiredGroups: order-group
+server:
+  port: 0
+events:
+  worker: http://order-worker/v1/events
+---
+spring:
+  profiles: development
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: "PLAINTEXT://kafka:29092"
+  jpa:
+    show_sql: false
+    database: H2
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+    initialize: false
+---
+spring:
+  profiles: docker
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${DOCKER_IP:192.168.99.100}
+          zk-nodes: ${DOCKER_IP:192.168.99.100}
+      bindings:
+        output:
+          destination: order
+          contentType: 'application/json'
+  datasource:
+    url: jdbc:mysql://${DOCKER_IP:192.168.99.100}:3306/dev
+    username: root
+    password: dbpass
+    initialize: true
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${DOCKER_IP:192.168.99.100}:8761/eureka
+    registryFetchIntervalSeconds: 5
+  instance:
+    hostname: ${DOCKER_IP:192.168.99.100}
+    instance-id: ${spring.application.name}:${random.int}
+    leaseRenewalIntervalInSeconds: 5
+---
+spring:
+  profiles: test
+  jpa:
+    show_sql: false
+    database: H2
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+    initialize: false
+eureka:
+  client:
+    enabled: false
+logging:
+  level:
+    org:
+      apache:
+        zookeeper:
+          ZooKeeper: error
+    org.apache.kafka.clients.producer.ProducerConfig: error
+---
+spring:
+  profiles: cloud
+  cloud:
+    stream:
+      bindings:
+        output:
+          destination: order
+          contentType: 'application/json'
+eureka:
+  instance:
+    hostname: ${vcap.application.uris[0]:localhost}
+    nonSecurePort: 80
+    metadataMap:
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+    leaseRenewalIntervalInSeconds: 5
+  client:
+    region: default
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: ${vcap.services.discovery-service.credentials.uri:http://localhost:8761}/eureka/
