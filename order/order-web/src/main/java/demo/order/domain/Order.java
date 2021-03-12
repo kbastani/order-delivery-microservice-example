@@ -1,5 +1,7 @@
 package demo.order.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import demo.domain.AbstractEntity;
 import demo.domain.Aggregate;
@@ -12,9 +14,10 @@ import org.springframework.hateoas.Link;
 
 import javax.persistence.*;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Entity(name = "orders")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Order extends AbstractEntity<OrderEvent, Long> {
     @Id
     @GeneratedValue
@@ -147,7 +150,7 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     /**
      * Returns the {@link Link} with a rel of {@link Link#REL_SELF}.
      */
-    @Override
+    @JsonIgnore
     public Link getId() {
         return linkTo(OrderController.class)
                 .slash("orders")

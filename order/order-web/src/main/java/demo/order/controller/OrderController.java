@@ -6,10 +6,11 @@ import demo.order.domain.Order;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
-import org.springframework.hateoas.LinkBuilder;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/v1")
@@ -26,10 +27,13 @@ public class OrderController {
 
     private final OrderService orderService;
     private final EventService<OrderEvent, Long> eventService;
+    private final EntityLinks entityLinks;
 
-    public OrderController(OrderService orderService, EventService<OrderEvent, Long> eventService) {
+    public OrderController(OrderService orderService, EventService<OrderEvent, Long> eventService,
+                           EntityLinks entityLinks) {
         this.orderService = orderService;
         this.eventService = eventService;
+        this.entityLinks = entityLinks;
     }
 
     @PostMapping(path = "/orders")
@@ -55,7 +59,7 @@ public class OrderController {
 
     @RequestMapping(path = "/orders/{id}/events")
     public ResponseEntity getOrderEvents(@PathVariable Long id) {
-        return Optional.of(getOrderEventResources(id))
+        return Optional.of(getOrderEventCollectionModel(id))
                 .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
                 .orElseThrow(() -> new RuntimeException("Could not get order events"));
     }
@@ -76,7 +80,7 @@ public class OrderController {
 
     @RequestMapping(path = "/orders/{id}/commands")
     public ResponseEntity getCommands(@PathVariable Long id) {
-        return Optional.ofNullable(getCommandsResources(id))
+        return Optional.ofNullable(getCommandsCollectionModel(id))
                 .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
                 .orElseThrow(() -> new RuntimeException("The order could not be found"));
     }
@@ -147,7 +151,7 @@ public class OrderController {
     @RequestMapping(path = "/orders/search/findOrdersByAccountId")
     public ResponseEntity findOrdersByAccountId(@RequestParam("accountId") Long accountId) {
         return Optional.ofNullable(orderService.findOrdersByAccountId(accountId))
-                .map(e -> new ResponseEntity<>(new Resources<Order>(e), HttpStatus.OK))
+                .map(e -> new ResponseEntity<>(new CollectionModel<Order>(e), HttpStatus.OK))
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
@@ -157,7 +161,7 @@ public class OrderController {
      * @param order is the {@link Order} model used to create a new order
      * @return a hypermedia resource for the newly created {@link Order}
      */
-    private Resource<Order> createOrderResource(Order order) {
+    private EntityModel<Order> createOrderResource(Order order) {
         Assert.notNull(order, "Order body must not be null");
 
         // Create the new order
@@ -173,7 +177,7 @@ public class OrderController {
      * @param order is the entity representation containing any updated {@link Order} fields
      * @return a hypermedia resource for the updated {@link Order}
      */
-    private Resource<Order> updateOrderResource(Long id, Order order) {
+    private EntityModel<Order> updateOrderResource(Long id, Order order) {
         order.setIdentity(id);
         return getOrderResource(orderService.update(order));
     }
@@ -186,14 +190,14 @@ public class OrderController {
      * @param event   is the {@link OrderEvent} that attempts to alter the state of the {@link Order}
      * @return a hypermedia resource for the newly appended {@link OrderEvent}
      */
-    private Resource<OrderEvent> appendEventResource(Long orderId, OrderEvent event) {
-        Resource<OrderEvent> eventResource = null;
+    private EntityModel<OrderEvent> appendEventResource(Long orderId, OrderEvent event) {
+        EntityModel<OrderEvent> eventResource = null;
 
         orderService.get(orderId)
                 .sendAsyncEvent(event);
 
         if (event != null) {
-            eventResource = new Resource<>(event,
+            eventResource = EntityModel.of(event,
                     linkTo(OrderController.class)
                             .slash("orders")
                             .slash(orderId)
@@ -214,7 +218,7 @@ public class OrderController {
         return eventService.findOne(eventId);
     }
 
-    private Events getOrderEventResources(Long id) {
+    private Events getOrderEventCollectionModel(Long id) {
         return eventService.find(id);
     }
 
@@ -236,7 +240,7 @@ public class OrderController {
      * @param order is the {@link Order} to enrich with hypermedia links
      * @return is a hypermedia enriched resource for the supplied {@link Order} entity
      */
-    private Resource<Order> getOrderResource(Order order) {
+    private EntityModel<Order> getOrderResource(Order order) {
         if (order == null) return null;
 
         if (!order.hasLink("commands")) {
@@ -249,12 +253,17 @@ public class OrderController {
             order.add(linkBuilder("getOrderEvents", order.getIdentity()).withRel("events"));
         }
 
-        return new Resource<>(order);
+        if(!order.hasLink("self")) {
+            // Add self link
+            order.add(order.getId());
+        }
+
+        return EntityModel.of(order);
     }
 
-    private ResourceSupport getCommandsResources(Long id) {
+    private RepresentationModel getCommandsCollectionModel(Long id) {
         Order order = new Order();
         order.setIdentity(id);
-        return new Resource<>(order.getCommands());
+        return EntityModel.of(order.getCommands());
     }
 }

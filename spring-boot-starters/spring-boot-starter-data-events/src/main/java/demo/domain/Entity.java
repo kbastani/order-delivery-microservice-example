@@ -1,7 +1,6 @@
 package demo.domain;
 
-
-import org.springframework.hateoas.Identifiable;
+import org.springframework.hateoas.Link;
 
 import java.io.Serializable;
 
@@ -12,5 +11,7 @@ import java.io.Serializable;
  *
  * @author Kenny Bastani
  */
-public interface Entity<ID extends Serializable> extends Identifiable<ID> {
+public interface Entity<ID extends Serializable> {
+
+    Link getId();
 }

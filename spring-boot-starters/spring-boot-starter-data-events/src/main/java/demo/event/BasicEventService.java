@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +49,9 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
 
     public <E extends Aggregate, S extends T> S send(S event, Link... links) {
         // Assemble request to the event stream processor
-        RequestEntity<Resource<T>> requestEntity = RequestEntity.post(URI.create(eventsWorker))
+        RequestEntity<EntityModel<T>> requestEntity = RequestEntity.post(URI.create(eventsWorker))
                 .contentType(MediaTypes.HAL_JSON)
-                .body(new Resource<T>(event), Resource.class);
+                .body(new EntityModel<T>(event), EntityModel.class);
 
         try {
             // Send the event to the event stream processor
@@ -91,7 +91,7 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
 
     public <E extends Events> E find(ID entityId) {
         return (E) new Events(entityId, eventRepository.findEventsByEntityId(entityId,
-                new PageRequest(0, Integer.MAX_VALUE))
+                PageRequest.of(0, Integer.MAX_VALUE))
                 .getContent());
     }
 }

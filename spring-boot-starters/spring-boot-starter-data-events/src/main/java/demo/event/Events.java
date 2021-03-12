@@ -2,8 +2,8 @@ package demo.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import demo.domain.Aggregate;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resources;
 
 import java.io.Serializable;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author Kenny Bastani
  */
-public class Events<T extends Aggregate, E, ID extends Serializable> extends Resources<Event<T, E, ID>> {
+public class Events<T extends Aggregate, E, ID extends Serializable> extends CollectionModel<Event<T, E, ID>> {
 
     private ID entityId;
 

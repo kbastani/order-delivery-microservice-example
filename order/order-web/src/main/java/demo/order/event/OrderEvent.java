@@ -1,6 +1,7 @@
 package demo.order.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import demo.event.Event;
 import demo.order.controller.OrderController;
 import demo.order.domain.Order;
@@ -12,7 +13,7 @@ import org.springframework.hateoas.Link;
 
 import javax.persistence.*;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 /**
  * The domain event {@link OrderEvent} tracks the type and state of events as applied to the {@link Order} domain
@@ -25,6 +26,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(indexes = {@Index(name = "IDX_ORDER_EVENT", columnList = "entity_id")})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderEvent extends Event<Order, OrderEventType, Long> {
 
     @Id
@@ -162,7 +164,8 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
 
     @Override
     public Link getId() {
-        return linkTo(OrderController.class).slash("orders").slash(getEntity().getIdentity()).slash("events")
+        return linkTo(OrderController.class).slash("orders")
+                .slash(getEntity().getIdentity()).slash("events")
                 .slash(getEventId()).withSelfRel();
     }
 

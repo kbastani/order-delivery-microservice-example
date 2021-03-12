@@ -1,21 +1,21 @@
 package demo.order.domain;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resources;
 
-public class Orders extends Resources<Order> {
+public class Orders extends CollectionModel<Order> {
 
     /**
-     * Creates an empty {@link Resources} instance.
+     * Creates an empty {@link CollectionModel} instance.
      */
     public Orders() {
     }
 
     /**
-     * Creates a {@link Resources} instance with the given content and {@link Link}s (optional).
+     * Creates a {@link CollectionModel} instance with the given content and {@link Link}s (optional).
      *
      * @param content must not be {@literal null}.
-     * @param links   the links to be added to the {@link Resources}.
+     * @param links   the links to be added to the {@link CollectionModel}.
      */
     public Orders(Iterable<Order> content, Link... links) {
         super(content, links);

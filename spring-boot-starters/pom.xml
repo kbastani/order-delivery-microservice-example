@@ -24,7 +24,6 @@
     </properties>
 
     <modules>
-        <module>spring-boot-starter-aws-lambda</module>
         <module>spring-boot-starter-data-events</module>
     </modules>
 </project>

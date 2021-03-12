@@ -14,7 +14,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.2.RELEASE</version>
+        <version>2.4.3</version>
+        <relativePath/>
     </parent>
 
     <properties>
@@ -22,8 +23,7 @@
         <spring-boot-starter-aws-lambda.version>1.0-SNAPSHOT</spring-boot-starter-aws-lambda.version>
         <aws-java-sdk-sts.version>1.11.67</aws-java-sdk-sts.version>
         <json-path.version>2.2.0</json-path.version>
-        <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
-        <spring-data-releasetrain.version>Moore-M1</spring-data-releasetrain.version>
+        <spring-cloud.version>2020.0.1</spring-cloud.version>
     </properties>
 
     <modules>
@@ -53,34 +53,23 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-releasetrain</artifactId>
-                <version>${spring-data-releasetrain.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <repositories>
         <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/release</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/release</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 
 </project>

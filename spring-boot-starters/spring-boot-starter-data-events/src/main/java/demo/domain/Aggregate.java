@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 /**
  * An {@link Aggregate} is an entity that contains references to one or more other {@link Entity} objects. Aggregates
@@ -27,7 +27,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
  *
  * @author Kenny Bastani
  */
-public abstract class Aggregate<E extends Event, ID extends Serializable> extends ResourceSupport implements
+public abstract class Aggregate<E extends Event, ID extends Serializable> extends RepresentationModel implements
         Entity<Link> {
 
     @JsonProperty("id")
@@ -116,13 +116,13 @@ public abstract class Aggregate<E extends Event, ID extends Serializable> extend
     }
 
     @Override
-    public List<Link> getLinks() {
-        List<Link> links = super.getLinks()
+    public Links getLinks() {
+        Links links = Links.of(super.getLinks()
                 .stream()
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
-        if (!super.hasLink("self"))
-            links.add(getId());
+//        if (!super.hasLink("self"))
+//            links.and(this.getLinks().getLink("self").get());
 
         return links;
     }
@@ -149,7 +149,7 @@ public abstract class Aggregate<E extends Event, ID extends Serializable> extend
                     String uri = linkTo(m, getIdentity()).withRel(m.getName())
                             .getHref();
 
-                    return new Link(new UriTemplate(uri, new TemplateVariables(Arrays.stream(m.getParameters())
+                    return Link.of(UriTemplate.of(uri, new TemplateVariables(Arrays.stream(m.getParameters())
                             .filter(p -> p.isAnnotationPresent(RequestParam.class))
                             .map(p -> new TemplateVariable(p.getAnnotation(RequestParam.class)
                                     .value(), TemplateVariable.VariableType.REQUEST_PARAM))
@@ -174,7 +174,7 @@ public abstract class Aggregate<E extends Event, ID extends Serializable> extend
         return (EventService<E, ID>) getModule().getDefaultEventService();
     }
 
-    public static class CommandResources extends ResourceSupport {
+    public static class CommandResources extends RepresentationModel {
     }
 
 

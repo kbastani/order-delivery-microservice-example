@@ -1,14 +1,18 @@
 package demo.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import demo.domain.Aggregate;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.Links;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 /**
  * Abstract implementation of the {@link Event} entity.
@@ -18,9 +22,9 @@ import java.util.stream.Collectors;
  * @param <ID> is the unique identifier type used to persist the {@link Event}
  * @author Kenny Bastani
  * @see org.springframework.stereotype.Repository
- * @see ResourceSupport
+ * @see RepresentationModel
  */
-public abstract class Event<T extends Aggregate, E, ID extends Serializable> extends ResourceSupport {
+public abstract class Event<T extends Aggregate, E, ID extends Serializable> extends RepresentationModel {
 
     public Event() {
     }
@@ -45,15 +49,21 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
 
     public abstract void setLastModified(Long lastModified);
 
+    @JsonIgnore
+    public Link getId() {
+        return this.getRequiredLink("self");
+    }
+
     @Override
     @SuppressWarnings("unchecked")
-    public List<Link> getLinks() {
+    public Links getLinks() {
         List<Link> links = super.getLinks().stream().collect(Collectors.toList());
         links.add(getId());
         Class<T> clazz = (Class<T>) ((ParameterizedTypeImpl)
                 this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        links.add(getEntity().getId().withRel(new EvoInflectorRelProvider().getItemResourceRelFor(clazz)));
-        return links;
+        links.add(getEntity().getId().withRel(new EvoInflectorLinkRelationProvider()
+                .getItemResourceRelFor(clazz)));
+        return Links.of(links);
     }
 
     @Override
