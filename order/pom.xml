@@ -19,6 +19,7 @@
 
     <modules>
         <module>order-web</module>
+        <module>load-simulator</module>
     </modules>
 
 </project>

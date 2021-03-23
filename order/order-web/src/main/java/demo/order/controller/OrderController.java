@@ -85,7 +85,7 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The order could not be found"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/assignOrder")
+    @PostMapping(path = "/orders/{id}/commands/assignOrder")
     public ResponseEntity assignOrder(@PathVariable Long id, @RequestParam(value = "restaurantId") Long restaurantId) {
         return Optional.ofNullable(orderService.get(id)
                 .assignOrder(restaurantId))
@@ -93,7 +93,7 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/updateOrderLocation")
+    @PostMapping(path = "/orders/{id}/commands/updateOrderLocation")
     public ResponseEntity updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") String lat,
                                               @RequestParam(value = "lon") String lon) {
         return Optional.ofNullable(orderService.get(id)
@@ -102,7 +102,7 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/prepareOrder")
+    @PostMapping(path = "/orders/{id}/commands/prepareOrder")
     public ResponseEntity prepareOrder(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .prepareOrder())
@@ -110,7 +110,7 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/orderReady")
+    @PostMapping(path = "/orders/{id}/commands/orderReady")
     public ResponseEntity orderReady(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .orderReady())
@@ -118,7 +118,7 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/orderPickedUp")
+    @PostMapping(path = "/orders/{id}/commands/orderPickedUp")
     public ResponseEntity orderPickedUp(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .orderPickedUp())
@@ -126,7 +126,7 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/deliverOrder")
+    @PostMapping(path = "/orders/{id}/commands/deliverOrder")
     public ResponseEntity deliverOrder(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .deliverOrder())
@@ -134,14 +134,14 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/orders/{id}/commands/orderDelivered")
+    @PostMapping(path = "/orders/{id}/commands/orderDelivered")
     public ResponseEntity orderDelivered(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id).orderDelivered())
                 .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
                 .orElseThrow(() -> new RuntimeException("The command could not be applied"));
     }
 
-    @RequestMapping(path = "/order/{id}/commands/updateOrderStatus")
+    @PostMapping(path = "/order/{id}/commands/updateOrderStatus")
     public ResponseEntity updateOrderStatus(@PathVariable Long id, @RequestParam(value = "status") OrderStatus status) {
         return Optional.ofNullable(orderService.get(id).updateOrderStatus(status))
                 .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))

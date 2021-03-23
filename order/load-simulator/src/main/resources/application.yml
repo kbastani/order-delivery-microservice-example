@@ -12,7 +12,7 @@ spring:
           producer:
             requiredGroups: order-group
 server:
-  port: 8080
+  port: 0
 events:
   worker: http://order-worker/v1/events
 ---
