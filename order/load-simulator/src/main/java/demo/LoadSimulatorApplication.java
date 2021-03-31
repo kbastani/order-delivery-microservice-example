@@ -30,7 +30,7 @@ public class LoadSimulatorApplication {
     @Bean
     public CommandLineRunner commandLineRunner(OrderClient orderClient) {
         return (args) -> {
-            List<Restaurant> restaurantList = IntStream.range(0, 4)
+            List<Restaurant> restaurantList = IntStream.range(0, 10)
                     .mapToObj(i -> Restaurant.from(new RestaurantProperties((long) i,
                             7500L,
                             1000L,
