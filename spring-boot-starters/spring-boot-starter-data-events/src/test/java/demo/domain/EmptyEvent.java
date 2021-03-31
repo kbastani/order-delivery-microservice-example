@@ -36,6 +36,16 @@ public class EmptyEvent extends Event {
     }
 
     @Override
+    public Long getPrimaryKey() {
+        return null;
+    }
+
+    @Override
+    public void setPrimaryKey(Long primaryKey) {
+
+    }
+
+    @Override
     public Long getCreatedAt() {
         return null;
     }

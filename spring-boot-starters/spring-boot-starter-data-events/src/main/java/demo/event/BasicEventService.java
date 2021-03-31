@@ -72,6 +72,7 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
         return eventSource.getChannel()
                 .send(MessageBuilder.withPayload(event)
                         .setHeader("contentType", MediaType.APPLICATION_JSON_UTF8_VALUE)
+                        .setHeader("primaryKey", event.getPrimaryKey())
                         .build());
     }
 

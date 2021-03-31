@@ -12,8 +12,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
 /**
  * Abstract implementation of the {@link Event} entity.
  *
@@ -40,6 +38,10 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
     public abstract T getEntity();
 
     public abstract void setEntity(T entity);
+
+    public abstract Long getPrimaryKey();
+
+    public abstract void setPrimaryKey(Long primaryKey);
 
     public abstract Long getCreatedAt();
 
