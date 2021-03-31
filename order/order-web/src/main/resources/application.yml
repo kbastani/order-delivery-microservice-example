@@ -3,6 +3,9 @@ spring:
     active: development
   cloud:
     stream:
+      kafka:
+        binder:
+          auto-add-partitions: true
       bindings:
         output:
           binder: kafka
@@ -10,6 +13,8 @@ spring:
           contentType: 'application/json'
           group: order-group
           producer:
+            partition-key-expression: headers['primaryKey']
+            partition-count: 12
             requiredGroups: order-group
 server:
   port: 8080
@@ -17,7 +22,10 @@ events:
   worker: http://order-worker/v1/events
 ---
 spring:
-  profiles: development
+  config:
+    activate:
+      on-profile:
+        - development
   cloud:
     stream:
       kafka:

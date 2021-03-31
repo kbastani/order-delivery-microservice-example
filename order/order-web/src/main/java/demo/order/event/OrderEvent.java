@@ -41,6 +41,8 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
+    private Long primaryKey;
+
     private String orderLocationLat;
     private String orderLocationLon;
     private Long restaurantId;
@@ -70,6 +72,7 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
         this.restaurantId = entity.getRestaurantId();
         this.orderLocationLat = entity.getOrderLocationLat();
         this.orderLocationLon = entity.getOrderLocationLon();
+        this.primaryKey = entity.getIdentity();
     }
 
     @Override
@@ -108,6 +111,16 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     @Override
     public void setEntity(Order entity) {
         this.entity = entity;
+    }
+
+    @Override
+    public Long getPrimaryKey() {
+        return primaryKey;
+    }
+
+    @Override
+    public void setPrimaryKey(Long primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
     public String getOrderLocationLat() {
