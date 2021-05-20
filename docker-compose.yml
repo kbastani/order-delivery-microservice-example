@@ -27,3 +27,13 @@ services:
     ports:
       - "9000:9000/tcp"
       - "8000:8000/tcp"
+  order-delivery-service:
+    image: order-web:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: development
+    ports:
+      - "8080:8080/tcp"
+  load-simulator:
+    image: load-simulator:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: development

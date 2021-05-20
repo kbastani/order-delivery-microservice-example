@@ -1,4 +1,4 @@
-FROM anapsix/alpine-java:8
+FROM adoptopenjdk/openjdk11
 VOLUME /tmp
 ADD order-web-0.0.1-SNAPSHOT.jar app.jar
 RUN bash -c 'touch /app.jar'

@@ -6,10 +6,12 @@ import demo.restaurant.domain.Restaurant;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,14 +25,17 @@ public class LoadSimulatorApplication {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofMillis(3000))
+                .setReadTimeout(Duration.ofMillis(3000))
+                .build();
     }
 
     @Bean
     public CommandLineRunner commandLineRunner(OrderClient orderClient) {
         return (args) -> {
-            List<Restaurant> restaurantList = IntStream.range(0, 10)
+            List<Restaurant> restaurantList = IntStream.range(0, 1000)
                     .mapToObj(i -> Restaurant.from(new RestaurantProperties((long) i,
                             7500L,
                             1000L,
