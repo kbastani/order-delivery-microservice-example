@@ -1,4 +1,4 @@
 spring:
   application:
-    name: order-web
+    name: load-simulator
 ---

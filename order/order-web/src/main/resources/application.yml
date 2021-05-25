@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: development
+    active: docker
   cloud:
     stream:
       kafka:
@@ -39,36 +39,28 @@ spring:
     initialize: false
 ---
 spring:
-  profiles: docker
+  config:
+    activate:
+      on-profile:
+        - docker
   cloud:
     stream:
       kafka:
         binder:
-          brokers: ${DOCKER_IP:192.168.99.100}
-          zk-nodes: ${DOCKER_IP:192.168.99.100}
-      bindings:
-        output:
-          destination: order
-          contentType: 'application/json'
+          brokers: "PLAINTEXT://kafka:29092"
   datasource:
-    url: jdbc:mysql://${DOCKER_IP:192.168.99.100}:3306/dev
-    username: root
-    password: dbpass
-    initialize: true
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/postgres
+    username: postgres
+    password: postgres
   jpa:
     hibernate:
       ddl-auto: update
-    database-platform: org.hibernate.dialect.MySQLDialect
-eureka:
-  client:
-    service-url:
-      defaultZone: http://${DOCKER_IP:192.168.99.100}:8761/eureka
-    registryFetchIntervalSeconds: 5
-  instance:
-    hostname: ${DOCKER_IP:192.168.99.100}
-    instance-id: ${spring.application.name}:${random.int}
-    leaseRenewalIntervalInSeconds: 5
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: true
 ---
 spring:
   profiles: test
