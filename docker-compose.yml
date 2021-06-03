@@ -63,4 +63,4 @@ services:
     links:
       - order-delivery-service
     environment:
-      SPRING_PROFILES_ACTIVE: development
+      SPRING_PROFILES_ACTIVE: docker

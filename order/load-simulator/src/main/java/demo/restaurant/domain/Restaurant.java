@@ -1,5 +1,6 @@
 package demo.restaurant.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import demo.order.client.OrderClient;
 import demo.order.domain.Order;
 import demo.restaurant.config.RestaurantProperties;
@@ -29,27 +30,31 @@ import java.util.stream.Collectors;
 public class Restaurant {
 
     private final Logger log = Logger.getLogger(this.getClass().getName());
-    private final RestaurantProperties properties;
+    private RestaurantProperties properties;
     private final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> orderScheduler;
     private Long orderCount = 0L;
     private Long deliveryTime = 0L;
-    private Long restaurantId;
     private final Kitchen kitchen = new Kitchen();
-    private final OrderClient orderClient;
+    private OrderClient orderClient;
+    private String city;
+    private String name;
+    private String country;
+    private Double longitude;
+    private Double latitude;
+    private Integer storeId;
+
+    public Restaurant() {
+    }
 
     public Restaurant(RestaurantProperties properties, OrderClient orderClient) {
         this.properties = properties;
-        this.restaurantId = properties.getRestaurantId();
         this.orderClient = orderClient;
     }
 
-    public Long getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Long restaurantId) {
-        this.restaurantId = restaurantId;
+    public void init(RestaurantProperties properties, OrderClient orderClient) {
+        this.properties = properties;
+        this.orderClient = orderClient;
     }
 
     public ScheduledFuture<?> getOrderScheduler() {
@@ -66,7 +71,7 @@ public class Restaurant {
 
     public void newOrder() {
         Order orderResponse = orderClient.create(new Order(Math.round(Math.random() * 100000000.0)));
-        orderResponse = orderClient.assignOrder(orderResponse.getOrderId(), this.getRestaurantId());
+        orderResponse = orderClient.assignOrder(orderResponse.getOrderId(), this.getStoreId());
         orderResponse = orderClient.prepareOrder(orderResponse.getOrderId());
         deliveryTime += (1 + ((Math.round(Math.random() * properties.getPreparationRate()))));
         orderCount++;
@@ -107,10 +112,63 @@ public class Restaurant {
         return new Restaurant(config, orderClient);
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    @JsonProperty("store_id")
+    public Integer getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(Integer storeId) {
+        this.storeId = storeId;
+    }
+
     @Override
     public String toString() {
         return "Restaurant{" +
-                "restaurantId=" + restaurantId +
+                "city='" + city + '\'' +
+                ", name='" + name + '\'' +
+                ", longitude=" + longitude +
+                ", latitude=" + latitude +
+                ", storeId=" + storeId +
                 '}';
     }
 }

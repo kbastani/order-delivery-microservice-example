@@ -2,7 +2,6 @@ package demo.restaurant.config;
 
 public class RestaurantProperties {
 
-    private Long restaurantId;
     private Long newOrderTime = 15000L;
     private Long preparationTime = 3000L;
     private Double preparationRate = 4.0;
@@ -14,20 +13,12 @@ public class RestaurantProperties {
         this.newOrderTime = newOrderTime;
     }
 
-    public RestaurantProperties(Long restaurantId, Long newOrderTime) {
-        this.restaurantId = restaurantId;
-        this.newOrderTime = newOrderTime;
-    }
-
-    public RestaurantProperties(Long restaurantId, Long newOrderTime, Long preparationTime) {
-        this.restaurantId = restaurantId;
+    public RestaurantProperties(Long newOrderTime, Long preparationTime) {
         this.newOrderTime = newOrderTime;
         this.preparationTime = preparationTime;
     }
 
-    public RestaurantProperties(Long restaurantId, Long newOrderTime, Long preparationTime,
-                                Double preparationRate) {
-        this.restaurantId = restaurantId;
+    public RestaurantProperties(Long newOrderTime, Long preparationTime, Double preparationRate) {
         this.newOrderTime = newOrderTime;
         this.preparationTime = preparationTime;
         this.preparationRate = preparationRate;
@@ -39,14 +30,6 @@ public class RestaurantProperties {
 
     public void setNewOrderTime(Long newOrderTime) {
         this.newOrderTime = newOrderTime;
-    }
-
-    public Long getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Long restaurantId) {
-        this.restaurantId = restaurantId;
     }
 
     public Long getPreparationTime() {

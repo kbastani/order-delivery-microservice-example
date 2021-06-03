@@ -3,3 +3,13 @@ spring:
     active: development
 server:
   port: 0
+order-service:
+  host: "localhost"
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - docker
+order-service:
+  host: "order-delivery-service"

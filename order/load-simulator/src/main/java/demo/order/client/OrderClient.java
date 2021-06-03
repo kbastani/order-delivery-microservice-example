@@ -5,6 +5,7 @@ import demo.order.domain.Order;
 import demo.order.domain.Orders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpMethod;
@@ -23,6 +24,9 @@ public class OrderClient {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final RestTemplate restTemplate;
 
+    @Value("${order-service.host:localhost}")
+    private String orderServiceHostName;
+
     public OrderClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -30,7 +34,8 @@ public class OrderClient {
     public Order get(Long orderId) {
         Order result;
         try {
-            result = restTemplate.getForObject(UriTemplate.of("http://order-delivery-service:8080/v1/orders/{id}")
+            orderServiceHostName = "localhost";
+            result = restTemplate.getForObject(UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}")
                     .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                     .expand(orderId), Order.class);
         } catch (RestClientResponseException ex) {
@@ -44,7 +49,7 @@ public class OrderClient {
     public Order create(Order order) {
         Order result;
         try {
-            result = restTemplate.postForObject(UriTemplate.of("http://order-delivery-service:8080/v1/orders").expand(),
+            result = restTemplate.postForObject(UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders").expand(),
                     order, Order.class);
         } catch (RestClientResponseException ex) {
             log.error("Create order failed", ex);
@@ -58,7 +63,7 @@ public class OrderClient {
         Order result;
         try {
             result = restTemplate.exchange(new RequestEntity<>(order, HttpMethod.PUT,
-                    UriTemplate.of("http://order-delivery-service:8080/v1/orders/{id}")
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}")
                             .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                             .expand(order.getOrderId())), Order.class).getBody();
         } catch (RestClientResponseException ex) {
@@ -71,7 +76,7 @@ public class OrderClient {
 
     public boolean delete(Long orderId) {
         try {
-            restTemplate.delete(UriTemplate.of("http://order-delivery-service:8080/v1/orders/{id}")
+            restTemplate.delete(UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}")
                     .with("id", TemplateVariable.VariableType.PATH_VARIABLE).expand(orderId));
         } catch (RestClientResponseException ex) {
             log.error("Delete order failed", ex);
@@ -85,7 +90,7 @@ public class OrderClient {
         Orders result;
         try {
             result = restTemplate
-                    .getForObject(UriTemplate.of("http://order-delivery-service:8080/v1/orders/search/findOrdersByAccountId")
+                    .getForObject(UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/search/findOrdersByAccountId")
                             .with("accountId", TemplateVariable.VariableType.REQUEST_PARAM)
                             .expand(accountId), Orders.class);
         } catch (RestClientResponseException ex) {
@@ -96,11 +101,11 @@ public class OrderClient {
         return result;
     }
 
-    public Order assignOrder(Long orderId, Long restaurantId) {
+    public Order assignOrder(Long orderId, Integer restaurantId) {
         Order result;
         try {
             result = restTemplate.postForObject(
-                    UriTemplate.of("http://order-delivery-service:8080/v1/orders/{id}/commands/assignOrder{?restaurantId}")
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}/commands/assignOrder{?restaurantId}")
                             .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                             .with("restaurantId", TemplateVariable.VariableType.REQUEST_PARAM)
                             .expand(orderId, restaurantId), null, Order.class);
@@ -116,7 +121,7 @@ public class OrderClient {
         Order result;
         try {
             result = restTemplate.postForObject(
-                    UriTemplate.of("http://order-delivery-service:8080/v1/orders/{id}/commands/prepareOrder")
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}/commands/prepareOrder")
                             .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                             .expand(orderId), null, Order.class);
         } catch (RestClientResponseException ex) {
@@ -131,7 +136,7 @@ public class OrderClient {
         Order result;
         try {
             result = restTemplate.postForObject(
-                    UriTemplate.of("http://order-delivery-service:8080/v1/orders/{id}/commands/orderReady")
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}/commands/orderReady")
                             .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                             .expand(orderId), null, Order.class);
         } catch (RestClientResponseException ex) {
