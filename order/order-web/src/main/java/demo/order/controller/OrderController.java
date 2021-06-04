@@ -94,8 +94,8 @@ public class OrderController {
     }
 
     @PostMapping(path = "/orders/{id}/commands/updateOrderLocation")
-    public ResponseEntity updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") String lat,
-                                              @RequestParam(value = "lon") String lon) {
+    public ResponseEntity updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") Double lat,
+                                              @RequestParam(value = "lon") Double lon) {
         return Optional.ofNullable(orderService.get(id)
                 .updateOrderLocation(lat, lon))
                 .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))

@@ -8,8 +8,10 @@ public class Order {
     private OrderStatus status;
     private Long createdAt;
     private Long lastModified;
-    private String orderLocationLat;
-    private String orderLocationLon;
+    private Double lat;
+    private Double lon;
+    private Double customerLat;
+    private Double customerLon;
 
     private Long accountId, restaurantId;
 
@@ -54,20 +56,36 @@ public class Order {
         this.restaurantId = restaurantId;
     }
 
-    public String getOrderLocationLat() {
-        return orderLocationLat;
+    public Double getLat() {
+        return lat;
     }
 
-    public void setOrderLocationLat(String orderLocationLat) {
-        this.orderLocationLat = orderLocationLat;
+    public void setLat(Double lat) {
+        this.lat = lat;
     }
 
-    public String getOrderLocationLon() {
-        return orderLocationLon;
+    public Double getLon() {
+        return lon;
     }
 
-    public void setOrderLocationLon(String orderLocationLon) {
-        this.orderLocationLon = orderLocationLon;
+    public void setLon(Double lon) {
+        this.lon = lon;
+    }
+
+    public Double getCustomerLat() {
+        return customerLat;
+    }
+
+    public void setCustomerLat(Double customerLat) {
+        this.customerLat = customerLat;
+    }
+
+    public Double getCustomerLon() {
+        return customerLon;
+    }
+
+    public void setCustomerLon(Double customerLon) {
+        this.customerLon = customerLon;
     }
 
     public Long getCreatedAt() {
@@ -93,8 +111,8 @@ public class Order {
                 ", status=" + status +
                 ", createdAt=" + createdAt +
                 ", lastModified=" + lastModified +
-                ", orderLocationLat='" + orderLocationLat + '\'' +
-                ", orderLocationLon='" + orderLocationLon + '\'' +
+                ", lat=" + lat +
+                ", lon=" + lon +
                 ", accountId=" + accountId +
                 ", restaurantId=" + restaurantId +
                 '}';

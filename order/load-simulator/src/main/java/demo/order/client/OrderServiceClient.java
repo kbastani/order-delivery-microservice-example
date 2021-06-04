@@ -140,7 +140,68 @@ public class OrderServiceClient {
                             .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                             .expand(orderId), null, Order.class);
         } catch (RestClientResponseException ex) {
-            log.error("Assign order failed", ex);
+            log.error("Could not make order ready", ex);
+            throw new IllegalStateException(getHttpStatusMessage(ex), ex);
+        }
+
+        return result;
+    }
+
+    public Order updateOrderLocation(Long orderId, Double lat, Double lon) {
+        Order result;
+        try {
+            result = restTemplate.postForObject(
+                    UriTemplate.of("http://" + orderServiceHostName +
+                            ":8080/v1/orders/{id}/commands/updateOrderLocation?lat=" + lat + "&lon=" + lon)
+                            .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
+                            .expand(orderId), null, Order.class);
+        } catch (RestClientResponseException ex) {
+            log.error("Could not update order location", ex);
+            throw new IllegalStateException(getHttpStatusMessage(ex), ex);
+        }
+
+        return result;
+    }
+
+    public Order orderPickedUp(Long orderId) {
+        Order result;
+        try {
+            result = restTemplate.postForObject(
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}/commands/orderPickedUp")
+                            .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
+                            .expand(orderId), null, Order.class);
+        } catch (RestClientResponseException ex) {
+            log.error("Could not pick up order", ex);
+            throw new IllegalStateException(getHttpStatusMessage(ex), ex);
+        }
+
+        return result;
+    }
+
+    public Order deliverOrder(Long orderId) {
+        Order result;
+        try {
+            result = restTemplate.postForObject(
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}/commands/deliverOrder")
+                            .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
+                            .expand(orderId), null, Order.class);
+        } catch (RestClientResponseException ex) {
+            log.error("Could not start order delivery trip", ex);
+            throw new IllegalStateException(getHttpStatusMessage(ex), ex);
+        }
+
+        return result;
+    }
+
+    public Order orderDelivered(Long orderId) {
+        Order result;
+        try {
+            result = restTemplate.postForObject(
+                    UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}/commands/orderDelivered")
+                            .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
+                            .expand(orderId), null, Order.class);
+        } catch (RestClientResponseException ex) {
+            log.error("Could not deliver order to customer", ex);
             throw new IllegalStateException(getHttpStatusMessage(ex), ex);
         }
 

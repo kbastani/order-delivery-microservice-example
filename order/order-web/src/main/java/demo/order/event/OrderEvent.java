@@ -43,8 +43,8 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
 
     private Long primaryKey;
 
-    private String orderLocationLat;
-    private String orderLocationLon;
+    private Double orderLocationLat;
+    private Double orderLocationLon;
     private Long restaurantId;
 
     @JsonIgnore
@@ -70,8 +70,8 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
         this.orderId = entity.getIdentity();
         this.orderStatus = entity.getStatus();
         this.restaurantId = entity.getRestaurantId();
-        this.orderLocationLat = entity.getOrderLocationLat();
-        this.orderLocationLon = entity.getOrderLocationLon();
+        this.orderLocationLat = entity.getLat();
+        this.orderLocationLon = entity.getLon();
         this.primaryKey = entity.getIdentity();
     }
 
@@ -123,19 +123,19 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
         this.primaryKey = primaryKey;
     }
 
-    public String getOrderLocationLat() {
+    public Double getOrderLocationLat() {
         return orderLocationLat;
     }
 
-    public void setOrderLocationLat(String orderLocationLat) {
+    public void setOrderLocationLat(Double orderLocationLat) {
         this.orderLocationLat = orderLocationLat;
     }
 
-    public String getOrderLocationLon() {
+    public Double getOrderLocationLon() {
         return orderLocationLon;
     }
 
-    public void setOrderLocationLon(String orderLocationLon) {
+    public void setOrderLocationLon(Double orderLocationLon) {
         this.orderLocationLon = orderLocationLon;
     }
 

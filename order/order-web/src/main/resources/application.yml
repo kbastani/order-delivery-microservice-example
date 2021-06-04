@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: docker
+    active: development
   cloud:
     stream:
       kafka:

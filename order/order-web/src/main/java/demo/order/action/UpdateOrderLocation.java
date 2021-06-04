@@ -21,14 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateOrderLocation extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    public Order apply(Order order, String lat, String lon) {
+    public Order apply(Order order, Double lat, Double lon) {
         OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
 
-        String oldLon = order.getOrderLocationLon();
-        String oldLat = order.getOrderLocationLat();
+        Double oldLon = order.getLon();
+        Double oldLat = order.getLat();
 
-        order.setOrderLocationLat(lat);
-        order.setOrderLocationLon(lon);
+        order.setLat(lat);
+        order.setLon(lon);
 
         order = orderService.update(order);
 
@@ -37,8 +37,8 @@ public class UpdateOrderLocation extends Action<Order> {
             order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_LOCATION_UPDATED, order));
         } catch (Exception ex) {
             log.error("Could not update order location", ex);
-            order.setOrderLocationLon(oldLon);
-            order.setOrderLocationLat(oldLat);
+            order.setLon(oldLon);
+            order.setLat(oldLat);
             order = orderService.update(order);
         }
 

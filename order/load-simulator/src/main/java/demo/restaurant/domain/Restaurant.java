@@ -3,6 +3,7 @@ package demo.restaurant.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import demo.order.client.OrderServiceClient;
 import demo.order.domain.Order;
+import demo.order.util.GeoUtils;
 import demo.restaurant.config.RestaurantProperties;
 
 import java.util.Arrays;
@@ -11,7 +12,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  * The restaurant actor drives the state of an order forward after customer creation and until a driver pickup.
@@ -75,21 +78,61 @@ public class Restaurant {
 
         final long preparedTime = orderPreparedTime.longValue();
 
-        deliveryScheduler
+        DeliveryWorkflow workflow = deliveryScheduler
                 .addToWorkflow(DeliveryWorkflow.build(deliveryScheduler), order,
                         (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(2.0)),
                         DeliveryEventType.ORDER_ASSIGNED, (orderItem) ->
                                 orderServiceClient.assignOrder(orderItem.getOrderId(), this.getStoreId()))
+                .addToWorkflow(order,
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 1),
+                        DeliveryEventType.ORDER_LOCATION_UPDATED, (orderItem) ->
+                                orderServiceClient.updateOrderLocation(order.getOrderId(), latitude, longitude))
                 .addToWorkflow(order,
                         (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(3.0)),
                         DeliveryEventType.ORDER_PREPARING, (orderItem) ->
                                 orderServiceClient.prepareOrder(order.getOrderId()))
                 .addToWorkflow(order,
                         (event) -> event.setDeliveryTime(preparedTime),
-                        DeliveryEventType.ORDER_PREPARED, (orderItem) -> {
-                            return orderServiceClient.orderReady(order.getOrderId());
-                        })
-                .execute();
+                        DeliveryEventType.ORDER_PREPARED, (orderItem) ->
+                                orderServiceClient.orderReady(order.getOrderId()))
+                .addToWorkflow(order,
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(15.0)),
+                        DeliveryEventType.ORDER_PICKED_UP, (orderItem) ->
+                                orderServiceClient.orderPickedUp(order.getOrderId()))
+                .addToWorkflow(order,
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(15.0)),
+                        DeliveryEventType.ORDER_DELIVERING, (orderItem) ->
+                                orderServiceClient.deliverOrder(order.getOrderId()));
+
+        // Generate an initial delivery bearing that is either N,E,S,W to simulate driving around in a city
+        AtomicReference<Double> deliveryBearing =
+                new AtomicReference<>(((int)(Math.round(Math.random() * 3.0) + 1.0)) * 90.0);
+
+        // Simulate the driver delivery location updates on the way to a randomized customer location
+        IntStream.range(0, 20).forEachOrdered(i -> {
+            final double newBearing = deliveryBearing.updateAndGet((val) -> getSimulatedRouteBearing(val, i + 1));
+            workflow.addToWorkflow(order,
+                    (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(4.0)),
+                    DeliveryEventType.ORDER_LOCATION_UPDATED, (orderItem) -> {
+                        Order updatedOrder = orderServiceClient.get(order.getOrderId());
+                        double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
+                                new double[]{updatedOrder.getLat(), updatedOrder.getLon()}, newBearing,
+                                (Math.random() / 2.0) + .25);
+                        return orderServiceClient.updateOrderLocation(order.getOrderId(), newDriverPosition[0],
+                                newDriverPosition[1]);
+                    });
+        });
+
+        workflow.addToWorkflow(order,
+                (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(3.0)),
+                DeliveryEventType.ORDER_DELIVERED, (orderItem) ->
+                        orderServiceClient.orderDelivered(order.getOrderId()));
+
+        workflow.execute();
+    }
+
+    private double getSimulatedRouteBearing(double deliveryBearing, int i) {
+        return ((deliveryBearing + ((i % 2) == 0 ? (Math.random() >= .5 ? 1 : -1) * 90.0 : 0)) + 360) % 360;
     }
 
     private long getFutureTimeFrame(double timeWindowRate) {

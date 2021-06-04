@@ -26,8 +26,8 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus status;
 
-    private String orderLocationLat;
-    private String orderLocationLon;
+    private Double lat;
+    private Double lon;
 
     private Long accountId, restaurantId;
 
@@ -75,20 +75,20 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
         this.restaurantId = restaurantId;
     }
 
-    public String getOrderLocationLat() {
-        return orderLocationLat;
+    public Double getLat() {
+        return lat;
     }
 
-    public void setOrderLocationLat(String orderLocationLat) {
-        this.orderLocationLat = orderLocationLat;
+    public void setLat(Double lat) {
+        this.lat = lat;
     }
 
-    public String getOrderLocationLon() {
-        return orderLocationLon;
+    public Double getLon() {
+        return lon;
     }
 
-    public void setOrderLocationLon(String orderLocationLon) {
-        this.orderLocationLon = orderLocationLon;
+    public void setLon(Double lon) {
+        this.lon = lon;
     }
 
     @Command(method = "assignOrder", controller = OrderController.class)
@@ -98,7 +98,7 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     }
 
     @Command(method = "updateOrderLocation", controller = OrderController.class)
-    public Order updateOrderLocation(String lat, String lon) {
+    public Order updateOrderLocation(Double lat, Double lon) {
         return getAction(UpdateOrderLocation.class)
                 .apply(this, lat, lon);
     }
