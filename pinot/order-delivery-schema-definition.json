@@ -1,0 +1,55 @@
+{
+  "schemaName": "orders",
+  "primaryKeyColumns": ["primaryKey"],
+  "dimensionFieldSpecs": [
+    {
+      "name": "orderId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "primaryKey",
+      "dataType": "STRING"
+    },
+    {
+      "name": "accountId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "eventId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "orderStatus",
+      "dataType": "STRING"
+    },
+    {
+      "name": "type",
+      "dataType": "STRING"
+    },
+    {
+      "name": "orderLocationLon",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "orderLocationLat",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "restaurantId",
+      "dataType": "LONG"
+    },
+    {
+      "dataType": "BYTES",
+      "name": "location_st_point",
+      "transformFunction": "toSphericalGeography(stPoint(orderLocationLon,orderLocationLat))"
+    }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "createdAt",
+      "dataType": "LONG",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}

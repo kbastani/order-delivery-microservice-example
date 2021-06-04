@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: development
+    active: docker
   cloud:
     stream:
       kafka:
@@ -49,17 +49,15 @@ spring:
         binder:
           brokers: "PLAINTEXT://kafka:29092"
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/postgres
-    username: postgres
-    password: postgres
+    platform: mysql
+    url: jdbc:mysql://mysql/bootdb
+    username: root
+    password: root
+    initialization-mode: always
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    open-in-view: false
+    show-sql: false
     generate-ddl: true
 ---
 spring:

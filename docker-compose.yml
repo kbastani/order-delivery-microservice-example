@@ -21,41 +21,49 @@ services:
       - "32181:32181/tcp"
     deploy:
       replicas: 1
-  postgres:
-    image: debezium/example-postgres:latest
-    ports:
-      - 5432:5432
+  mysql:
+    image: mysql:8
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-  connect:
-    image: debezium/connect:latest
-    ports:
-      - 8083:8083
-    links:
-      - kafka
-      - postgres
-    environment:
-      - BOOTSTRAP_SERVERS=kafka:29092
-      - GROUP_ID=1
-      - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=bootdb
+#  postgres:
+#    image: debezium/example-postgres:latest
+#    ports:
+#      - 5432:5432
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: postgres
+#  connect:
+#    image: debezium/connect:latest
+#    ports:
+#      - 8083:8083
+#    links:
+#      - kafka
+#      - postgres
+#    environment:
+#      - BOOTSTRAP_SERVERS=kafka:29092
+#      - GROUP_ID=1
+#      - CONFIG_STORAGE_TOPIC=my_connect_configs
+#      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+#      - STATUS_STORAGE_TOPIC=my_connect_statuses
   pinot:
-    image: apachepinot/pinot:0.7.0-SNAPSHOT-21b83d9ea-20210204-jdk11
+    image: apachepinot/pinot:release-0.7.1
     command: "QuickStart -type stream"
     ports:
       - "9000:9000/tcp"
       - "8000:8000/tcp"
+    links:
+      - kafka
+      - zookeeper
   order-delivery-service:
     image: order-web:latest
     links:
       - kafka
-      - postgres
+      - mysql
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: postgres
     ports:
       - "8080:8080/tcp"
   load-simulator:

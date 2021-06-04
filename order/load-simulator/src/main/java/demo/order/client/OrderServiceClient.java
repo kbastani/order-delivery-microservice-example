@@ -34,7 +34,6 @@ public class OrderServiceClient {
     public Order get(Long orderId) {
         Order result;
         try {
-            orderServiceHostName = "localhost";
             result = restTemplate.getForObject(UriTemplate.of("http://" + orderServiceHostName + ":8080/v1/orders/{id}")
                     .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                     .expand(orderId), Order.class);

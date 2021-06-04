@@ -1,5 +1,4 @@
-FROM adoptopenjdk/openjdk11
-VOLUME /tmp
-ADD load-simulator-0.0.1-SNAPSHOT.jar app.jar
-RUN bash -c 'touch /app.jar'
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+FROM adoptopenjdk/openjdk11:alpine-slim
+ARG JAR_FILE=load-simulator-0.0.2-SNAPSHOT.jar
+COPY ${JAR_FILE} app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]

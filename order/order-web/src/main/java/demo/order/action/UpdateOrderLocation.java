@@ -23,13 +23,8 @@ public class UpdateOrderLocation extends Action<Order> {
 
     public Order apply(Order order, Double lat, Double lon) {
         OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
-
-        Double oldLon = order.getLon();
-        Double oldLat = order.getLat();
-
         order.setLat(lat);
         order.setLon(lon);
-
         order = orderService.update(order);
 
         try {
@@ -37,9 +32,6 @@ public class UpdateOrderLocation extends Action<Order> {
             order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_LOCATION_UPDATED, order));
         } catch (Exception ex) {
             log.error("Could not update order location", ex);
-            order.setLon(oldLon);
-            order.setLat(oldLat);
-            order = orderService.update(order);
         }
 
         return order;

@@ -43,8 +43,12 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
 
     private Long primaryKey;
 
+    @Column
     private Double orderLocationLat;
+
+    @Column
     private Double orderLocationLon;
+
     private Long restaurantId;
 
     @JsonIgnore

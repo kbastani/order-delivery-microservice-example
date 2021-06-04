@@ -26,7 +26,10 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus status;
 
+    @Column
     private Double lat;
+
+    @Column
     private Double lon;
 
     private Long accountId, restaurantId;

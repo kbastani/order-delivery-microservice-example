@@ -5,15 +5,13 @@ import demo.order.client.OrderServiceClient;
 import demo.order.domain.Order;
 import demo.order.util.GeoUtils;
 import demo.restaurant.config.RestaurantProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 /**
@@ -28,10 +26,13 @@ import java.util.stream.IntStream;
  */
 public class Restaurant {
 
-    private final Logger log = Logger.getLogger(this.getClass().getName());
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private RestaurantProperties properties;
     private final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(2);
+    private final ExecutorService orderSchedulingRetryExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService eventProcessorRetryExecutor = Executors.newSingleThreadExecutor();
     private ScheduledFuture<?> orderScheduler;
+    private ScheduledFuture<?> eventScheduler;
     private Long orderCount = 0L;
     private Long orderPreparedTime = 0L;
     private final DeliveryScheduler deliveryScheduler = new DeliveryScheduler();
@@ -106,7 +107,7 @@ public class Restaurant {
 
         // Generate an initial delivery bearing that is either N,E,S,W to simulate driving around in a city
         AtomicReference<Double> deliveryBearing =
-                new AtomicReference<>(((int)(Math.round(Math.random() * 3.0) + 1.0)) * 90.0);
+                new AtomicReference<>(((int) (Math.round(Math.random() * 3.0) + 1.0)) * 90.0);
 
         // Simulate the driver delivery location updates on the way to a randomized customer location
         IntStream.range(0, 20).forEachOrdered(i -> {
@@ -141,12 +142,44 @@ public class Restaurant {
 
     public void open() {
         this.close();
+        createEventScheduler();
+        createOrderScheduler();
+    }
 
-        scheduledExecutor.scheduleWithFixedDelay(this::processScheduledEvents,
+    private void createEventScheduler() {
+        eventScheduler = scheduledExecutor.scheduleWithFixedDelay(this::processScheduledEvents,
                 properties.getPreparationTime(), properties.getPreparationTime(), TimeUnit.MILLISECONDS);
 
+        eventProcessorRetryExecutor.submit(() -> {
+            try {
+                eventScheduler.get();
+            } catch (ExecutionException e) {
+                Throwable rootException = e.getCause();
+                log.error("Error processing scheduled events", rootException);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                createEventScheduler();
+            }
+        });
+    }
+
+    private void createOrderScheduler() {
         this.setOrderScheduler(getScheduledExecutor().scheduleAtFixedRate(this::orderReceived,
                 properties.getNewOrderTime(), properties.getNewOrderTime(), TimeUnit.MILLISECONDS));
+
+        orderSchedulingRetryExecutor.submit(() -> {
+            try {
+                orderScheduler.get();
+            } catch (ExecutionException e) {
+                Throwable rootException = e.getCause();
+                log.error("Error scheduling tasks", rootException);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                createOrderScheduler();
+            }
+        });
     }
 
     private void processScheduledEvents() {
