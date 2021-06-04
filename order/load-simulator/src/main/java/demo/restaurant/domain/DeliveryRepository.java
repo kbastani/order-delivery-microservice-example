@@ -1,29 +1,29 @@
 package demo.restaurant.domain;
 
 import scheduler.Cart;
-import scheduler.OrderRequest;
+import scheduler.ScheduledEvent;
 import scheduler.StreamingRepository;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class KitchenRepository implements StreamingRepository<Cart<OrderDelivery>, OrderDelivery> {
+public class DeliveryRepository implements StreamingRepository<Cart<DeliveryEvent>, DeliveryEvent> {
 
-    private final Map<Long, Cart<OrderDelivery>> repo = new HashMap<>();
+    private final Map<Long, Cart<DeliveryEvent>> repo = new HashMap<>();
 
     @Override
-    public Cart<OrderDelivery> getById(Long id) {
+    public Cart<DeliveryEvent> getById(Long id) {
         return repo.get(id);
     }
 
     @Override
-    public void save(Cart<OrderDelivery> item) {
+    public void save(Cart<DeliveryEvent> item) {
         repo.put(item.getId(), item);
     }
 
     @Override
-    public OrderRequest<OrderDelivery> saveOrder(OrderRequest<OrderDelivery> orderRequest) {
-        return orderRequest;
+    public ScheduledEvent<DeliveryEvent> saveOrder(ScheduledEvent<DeliveryEvent> scheduledEvent) {
+        return scheduledEvent;
     }
 
     @Override

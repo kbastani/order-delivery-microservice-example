@@ -1,7 +1,7 @@
 package demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import demo.order.client.OrderClient;
+import demo.order.client.OrderServiceClient;
 import demo.restaurant.config.RestaurantProperties;
 import demo.restaurant.domain.Restaurant;
 import org.springframework.boot.CommandLineRunner;
@@ -43,7 +43,7 @@ public class LoadSimulatorApplication {
     }
 
     @Bean
-    public CommandLineRunner commandLineRunner(OrderClient orderClient) {
+    public CommandLineRunner commandLineRunner(OrderServiceClient orderServiceClient) {
         return (args) -> {
 
             String file = resourceAsString(new ClassPathResource("/static/locations.json"));
@@ -52,7 +52,7 @@ public class LoadSimulatorApplication {
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
                             .peek(restaurant ->
-                                    restaurant.init(new RestaurantProperties(7500L, 1000L, 15.0), orderClient))
+                                    restaurant.init(new RestaurantProperties(7500L, 1000L, 15.0), orderServiceClient))
                             .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
                             .collect(Collectors.toList());
 
@@ -62,7 +62,6 @@ public class LoadSimulatorApplication {
             });
         };
     }
-
 
     private static String resourceAsString(Resource resource) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {

@@ -21,17 +21,16 @@ public class TrackTest {
         Track<Integer> track = new Track<>(resource);
 
         // Creates a single-threaded track that delivers four orderRequests over two seconds
-        List<OrderRequest<Integer>> orderRequests = IntStream.of(1, 2, 3, 4)
+        List<ScheduledEvent<Integer>> scheduledEvents = IntStream.of(1, 2, 3, 4)
                 .mapToObj(k -> {
                     Resource<Integer> r = Resource.of(k);
-                    return new OrderRequest<>((long) r.hashCode(), k * 5L, r);
+                    return new ScheduledEvent<>((long) r.hashCode(), k * 5L, r);
                 }).collect(Collectors.toList());
 
-        orderRequests.forEach(track::schedule);
+        scheduledEvents.forEach(track::schedule);
 
         while (!track.isEmpty()) {
-            System.out.println(Arrays.toString(track.deliver().stream().flatMap(Collection::stream)
-                    .collect(Collectors.toList()).toArray(Integer[]::new)));
+            System.out.println(Arrays.toString(track.nextFrame().toArray(Integer[]::new)));
             Thread.sleep(100);
         }
     }
@@ -48,16 +47,16 @@ public class TrackTest {
         Track<Integer> track = new Track<>(resource);
 
         // Creates a single-threaded track that delivers four orderRequests over two seconds
-        List<OrderRequest<Integer>> orderRequests = IntStream.of(1, 2, 3, 4)
+        List<ScheduledEvent<Integer>> scheduledEvents = IntStream.of(1, 2, 3, 4)
                 .mapToObj(k -> {
                     Resource<Integer> r = Resource.of(k);
-                    return new OrderRequest<>((long) r.hashCode(), (long) k, r);
+                    return new ScheduledEvent<>((long) r.hashCode(), (long) k, r);
                 }).collect(Collectors.toList());
 
-        orderRequests.forEach(track::schedule);
+        scheduledEvents.forEach(track::schedule);
 
         while (!track.isEmpty()) {
-            long frame = Math.round(track.deliver().stream().flatMap(Collection::stream).findFirst().orElse(0));
+            long frame = Math.round(track.nextFrame().stream().findFirst().orElse(0));
             executor.schedule(() -> System.out.println(frame), frame * 500, TimeUnit.MILLISECONDS);
         }
 
@@ -79,8 +78,8 @@ public class TrackTest {
         }
 
         @Override
-        public OrderRequest<Integer> saveOrder(OrderRequest<Integer> orderRequest) {
-            return orderRequest;
+        public ScheduledEvent<Integer> saveOrder(ScheduledEvent<Integer> scheduledEvent) {
+            return scheduledEvent;
         }
 
         @Override

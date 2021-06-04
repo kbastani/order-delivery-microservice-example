@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class OrderClient {
+public class OrderServiceClient {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final RestTemplate restTemplate;
@@ -27,7 +27,7 @@ public class OrderClient {
     @Value("${order-service.host:localhost}")
     private String orderServiceHostName;
 
-    public OrderClient(RestTemplate restTemplate) {
+    public OrderServiceClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

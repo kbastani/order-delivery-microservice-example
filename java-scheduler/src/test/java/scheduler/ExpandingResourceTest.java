@@ -18,16 +18,16 @@ public class ExpandingResourceTest {
         LongStream.range(10L, 20L)
                 .forEach(i -> {
                     Cart<Integer> result = new Cart<Integer>(i);
-                    OrderRequest<Integer> orderRequest = new OrderRequest<Integer>(i, new Resource<Integer>(4, 0, new Integer[]{0, 1, 2, 3}));
-                    result.commit(orderRequest);
+                    ScheduledEvent<Integer> scheduledEvent = new ScheduledEvent<Integer>(i, new Resource<Integer>(4, 0, new Integer[]{0, 1, 2, 3}));
+                    result.commit(scheduledEvent);
                     repository.save(result);
                 });
 
         Cart<Integer>[] carts = new Cart[]{};
         ExpandingResource<Cart<Integer>, Integer> resource = new ExpandingResource<Cart<Integer>, Integer>(0, 0, carts, (i) -> {
             Cart<Integer> result = new Cart<Integer>(i);
-            OrderRequest<Integer> orderRequest = new OrderRequest<>(i, new Resource<Integer>(3, 0, new Integer[]{1, 1, 1}));
-            result.commit(orderRequest);
+            ScheduledEvent<Integer> scheduledEvent = new ScheduledEvent<>(i, new Resource<Integer>(3, 0, new Integer[]{1, 1, 1}));
+            result.commit(scheduledEvent);
             return result;
         }, repository);
 
@@ -35,7 +35,7 @@ public class ExpandingResourceTest {
             //System.out.println(.deliver());
             Cart<Integer> item = (Cart<Integer>) Stream.of(resource.take(1).toArray()).findFirst().get();
             //Arrays.toString(result[0].deliver().toArray(Integer[]::new));
-            String result = item.deliver().map(x -> Arrays.toString((x.toArray()))).collect(Collectors.joining(","));
+            String result = item.streamMultiChannel().map(x -> Arrays.toString((x.toArray()))).collect(Collectors.joining(","));
             System.out.println(item.getId() + ": " + result);
         });
 
@@ -56,8 +56,8 @@ public class ExpandingResourceTest {
         }
 
         @Override
-        public OrderRequest<Integer> saveOrder(OrderRequest<Integer> orderRequest) {
-            return orderRequest;
+        public ScheduledEvent<Integer> saveOrder(ScheduledEvent<Integer> scheduledEvent) {
+            return scheduledEvent;
         }
 
         @Override

@@ -18,8 +18,8 @@ public class InMemoryRepository implements StreamingRepository<Cart<Integer>, In
     }
 
     @Override
-    public OrderRequest<Integer> saveOrder(OrderRequest<Integer> orderRequest) {
-        return orderRequest;
+    public ScheduledEvent<Integer> saveOrder(ScheduledEvent<Integer> scheduledEvent) {
+        return scheduledEvent;
     }
 
     @Override

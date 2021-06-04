@@ -1,6 +1,7 @@
 package scheduler;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -22,28 +23,28 @@ public class Track<T> {
         this.log = log;
     }
 
-    public void schedule(OrderRequest<T> orderRequest) {
-        if (orderRequest.getState() == ResourceState.FULL) {
+    public void schedule(ScheduledEvent<T> scheduledEvent) {
+        if (scheduledEvent.getState() == ResourceState.FULL) {
             orderRequests++;
             // Make sure that the delivery time is in the future
-            if (orderRequest.getDeliveryTime() < (position)) {
-                orderRequest.setDeliveryTime(position + 1);
+            if (scheduledEvent.getDeliveryTime() < (position)) {
+                scheduledEvent.setDeliveryTime(position + 1);
             }
         }
 
-        Cart<T> cart = log.getRepository().getById(orderRequest.getDeliveryTime());
+        Cart<T> cart = log.getRepository().getById(scheduledEvent.getDeliveryTime());
         if (cart == null) {
-            cart = log.getFactory().apply(orderRequest.getDeliveryTime());
+            cart = log.getFactory().apply(scheduledEvent.getDeliveryTime());
         }
 
-        orderRequest = log.getRepository().saveOrder(orderRequest);
-        cart.commit(orderRequest);
+        scheduledEvent = log.getRepository().saveOrder(scheduledEvent);
+        cart.commit(scheduledEvent);
         log.getRepository().save(cart);
         //maxPosition = maxPosition < order.getDeliveryTime() ? order.getDeliveryTime() : maxPosition;
     }
 
-    public ArrayList<ArrayList<T>> deliver() {
-        ArrayList<ArrayList<T>> result = null;
+    public List<T> nextFrame() {
+        List<T> result = null;
 
         if (orderRequests > 0) {
             LinkedBlockingQueue<Cart<T>> results = new LinkedBlockingQueue<>(log.take(1)
@@ -52,7 +53,7 @@ public class Track<T> {
 
             //synchronized (Objects.requireNonNull(item)) {
                 try {
-                    result = item.deliver().collect(Collectors.toCollection(ArrayList::new));
+                    result = item.streamSingleChannel().collect(Collectors.toCollection(ArrayList::new));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

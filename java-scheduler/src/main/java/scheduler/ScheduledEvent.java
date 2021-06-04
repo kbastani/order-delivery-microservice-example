@@ -1,26 +1,36 @@
 package scheduler;
 
+import java.util.function.Consumer;
+
 /**
  * An order is a container of a variable-length resource that has been committed to a sequence of {@link Cart}s.
  */
-public class OrderRequest<T> {
+public class ScheduledEvent<T> {
 
     private Long id;
     private Long deliveryTime = 0L;
+    private Consumer<ScheduledEvent<T>> updateDeliveryTime = (event) -> {};
     private Resource<T> resource;
     private ResourceState state;
 
-    public OrderRequest() {
+    public ScheduledEvent() {
         state = ResourceState.FULL;
     }
 
-    public OrderRequest(Long id, Resource<T> resource) {
+    public ScheduledEvent(Long id, Resource<T> resource) {
         this();
         this.id = id;
         this.resource = resource;
     }
 
-    public OrderRequest(Long id, Long deliveryTime, Resource<T> resource) {
+    public ScheduledEvent(Long id, Resource<T> resource, Consumer<ScheduledEvent<T>> updateDeliveryTime) {
+        this();
+        this.id = id;
+        this.resource = resource;
+        this.updateDeliveryTime = updateDeliveryTime;
+    }
+
+    public ScheduledEvent(Long id, Long deliveryTime, Resource<T> resource) {
         this();
         this.id = id;
         this.deliveryTime = deliveryTime;
@@ -51,17 +61,25 @@ public class OrderRequest<T> {
         this.state = state;
     }
 
+    public Consumer<ScheduledEvent<T>> getUpdateDeliveryTime() {
+        return updateDeliveryTime;
+    }
+
+    public void setUpdateDeliveryTime(Consumer<ScheduledEvent<T>> updateDeliveryTime) {
+        this.updateDeliveryTime = updateDeliveryTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        OrderRequest<?> orderRequest = (OrderRequest<?>) o;
+        ScheduledEvent<?> scheduledEvent = (ScheduledEvent<?>) o;
 
-        if (id != null ? !id.equals(orderRequest.id) : orderRequest.id != null) return false;
-        if (deliveryTime != null ? !deliveryTime.equals(orderRequest.deliveryTime) : orderRequest.deliveryTime != null) return false;
-        if (resource != null ? !resource.equals(orderRequest.resource) : orderRequest.resource != null) return false;
-        return state == orderRequest.state;
+        if (id != null ? !id.equals(scheduledEvent.id) : scheduledEvent.id != null) return false;
+        if (deliveryTime != null ? !deliveryTime.equals(scheduledEvent.deliveryTime) : scheduledEvent.deliveryTime != null) return false;
+        if (resource != null ? !resource.equals(scheduledEvent.resource) : scheduledEvent.resource != null) return false;
+        return state == scheduledEvent.state;
     }
 
     @Override
@@ -75,7 +93,7 @@ public class OrderRequest<T> {
 
     @Override
     public String toString() {
-        return "Order{" +
+        return "ScheduledEvent{" +
                 "id=" + id +
                 ", deliveryTime=" + deliveryTime +
                 ", resource=" + resource +

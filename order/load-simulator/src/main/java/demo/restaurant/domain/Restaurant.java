@@ -1,21 +1,17 @@
 package demo.restaurant.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import demo.order.client.OrderClient;
+import demo.order.client.OrderServiceClient;
 import demo.order.domain.Order;
 import demo.restaurant.config.RestaurantProperties;
-import scheduler.OrderRequest;
-import scheduler.Resource;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * The restaurant actor drives the state of an order forward after customer creation and until a driver pickup.
@@ -34,9 +30,9 @@ public class Restaurant {
     private final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<?> orderScheduler;
     private Long orderCount = 0L;
-    private Long deliveryTime = 0L;
-    private final Kitchen kitchen = new Kitchen();
-    private OrderClient orderClient;
+    private Long orderPreparedTime = 0L;
+    private final DeliveryScheduler deliveryScheduler = new DeliveryScheduler();
+    private OrderServiceClient orderServiceClient;
     private String city;
     private String name;
     private String country;
@@ -47,14 +43,14 @@ public class Restaurant {
     public Restaurant() {
     }
 
-    public Restaurant(RestaurantProperties properties, OrderClient orderClient) {
+    public Restaurant(RestaurantProperties properties, OrderServiceClient orderServiceClient) {
         this.properties = properties;
-        this.orderClient = orderClient;
+        this.orderServiceClient = orderServiceClient;
     }
 
-    public void init(RestaurantProperties properties, OrderClient orderClient) {
+    public void init(RestaurantProperties properties, OrderServiceClient orderServiceClient) {
         this.properties = properties;
-        this.orderClient = orderClient;
+        this.orderServiceClient = orderServiceClient;
     }
 
     public ScheduledFuture<?> getOrderScheduler() {
@@ -69,37 +65,63 @@ public class Restaurant {
         return scheduledExecutor;
     }
 
-    public void newOrder() {
-        Order orderResponse = orderClient.create(new Order(Math.round(Math.random() * 100000000.0)));
-        orderResponse = orderClient.assignOrder(orderResponse.getOrderId(), this.getStoreId());
-        orderResponse = orderClient.prepareOrder(orderResponse.getOrderId());
-        deliveryTime += (1 + ((Math.round(Math.random() * properties.getPreparationRate()))));
+    public void orderReceived() {
         orderCount++;
-        OrderRequest<OrderDelivery> orderRequest = new OrderRequest<>(orderCount, deliveryTime,
-                Resource.of(new OrderDelivery(orderCount, orderResponse)));
-        log.info("[SCHEDULED]: " + this.toString() + ": " + orderRequest.toString());
-        kitchen.schedule(orderRequest);
+
+        // Create a new order request with a random order ID
+        Order order = orderServiceClient.create(new Order(Math.round(Math.random() * 100000000.0)));
+
+        orderPreparedTime += getFutureTimeFrame(properties.getPreparationRate());
+
+        final long preparedTime = orderPreparedTime.longValue();
+
+        deliveryScheduler
+                .addToWorkflow(DeliveryWorkflow.build(deliveryScheduler), order,
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(2.0)),
+                        DeliveryEventType.ORDER_ASSIGNED, (orderItem) ->
+                                orderServiceClient.assignOrder(orderItem.getOrderId(), this.getStoreId()))
+                .addToWorkflow(order,
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(3.0)),
+                        DeliveryEventType.ORDER_PREPARING, (orderItem) ->
+                                orderServiceClient.prepareOrder(order.getOrderId()))
+                .addToWorkflow(order,
+                        (event) -> event.setDeliveryTime(preparedTime),
+                        DeliveryEventType.ORDER_PREPARED, (orderItem) -> {
+                            return orderServiceClient.orderReady(order.getOrderId());
+                        })
+                .execute();
+    }
+
+    private long getFutureTimeFrame(double timeWindowRate) {
+        return (1 + ((Math.round(Math.random() * timeWindowRate))));
     }
 
     public void open() {
         this.close();
 
-        scheduledExecutor.scheduleWithFixedDelay(() -> {
-            if (!kitchen.isEmpty()) {
-                ArrayList<ArrayList<OrderDelivery>> orderRequests = kitchen.deliver();
-                if (orderRequests != null && orderRequests.stream().mapToLong(Collection::size).sum() > 0) {
-                    orderRequests.stream().flatMap(Collection::stream).forEach(orderDelivery -> {
-                        orderDelivery.setOrder(orderClient.orderReady(orderDelivery.getOrder().getOrderId()));
-                    });
-                    log.info("[DELIVERED]: " + this.toString() + ": " + Arrays.toString(orderRequests.stream()
-                            .flatMap(Collection::stream)
-                            .collect(Collectors.toList()).toArray(OrderDelivery[]::new)));
-                }
-            }
-        }, properties.getPreparationTime(), properties.getPreparationTime(), TimeUnit.MILLISECONDS);
+        scheduledExecutor.scheduleWithFixedDelay(this::processScheduledEvents,
+                properties.getPreparationTime(), properties.getPreparationTime(), TimeUnit.MILLISECONDS);
 
-        this.setOrderScheduler(getScheduledExecutor().scheduleAtFixedRate(this::newOrder, properties.getNewOrderTime(),
-                properties.getNewOrderTime(), TimeUnit.MILLISECONDS));
+        this.setOrderScheduler(getScheduledExecutor().scheduleAtFixedRate(this::orderReceived,
+                properties.getNewOrderTime(), properties.getNewOrderTime(), TimeUnit.MILLISECONDS));
+    }
+
+    private void processScheduledEvents() {
+        if (!deliveryScheduler.isEmpty()) {
+            List<DeliveryEvent> deliveryEvents = deliveryScheduler.nextFrame();
+
+            if (deliveryEvents != null && deliveryEvents.size() > 0) {
+                deliveryEvents.forEach(event -> {
+                    Order order = event.getDeliveryAction().apply(event.getOrder());
+                    event.setOrder(order);
+                    event.getDeliveryWorkflow().setCurrentOrderState(order);
+                    event.getDeliveryWorkflow().scheduleNext();
+                });
+
+                log.info("[ORDER_EVENT]: " + this.toString() + ": " + Arrays.toString(deliveryEvents
+                        .toArray(DeliveryEvent[]::new)));
+            }
+        }
     }
 
     public void close() {
@@ -108,8 +130,8 @@ public class Restaurant {
         }
     }
 
-    public static Restaurant from(RestaurantProperties config, OrderClient orderClient) {
-        return new Restaurant(config, orderClient);
+    public static Restaurant from(RestaurantProperties config, OrderServiceClient orderServiceClient) {
+        return new Restaurant(config, orderServiceClient);
     }
 
     public String getCity() {
