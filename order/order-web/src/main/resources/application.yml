@@ -49,8 +49,10 @@ spring:
         binder:
           brokers: "PLAINTEXT://kafka:29092"
   datasource:
+    hikari:
+      maximum-pool-size: 10000
     platform: mysql
-    url: jdbc:mysql://mysql/bootdb
+    url: jdbc:mysql://mysql:3306/bootdb
     username: root
     password: root
     initialization-mode: always

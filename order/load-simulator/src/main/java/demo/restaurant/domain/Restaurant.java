@@ -72,12 +72,11 @@ public class Restaurant {
     public void orderReceived() {
         orderCount++;
 
-        // Create a new order request with a random order ID
+        // Create a new order request with a random account ID
         Order order = orderServiceClient.create(new Order(Math.round(Math.random() * 100000000.0)));
 
         orderPreparedTime += getFutureTimeFrame(properties.getPreparationRate());
-
-        final long preparedTime = orderPreparedTime.longValue();
+        final long preparedTime = orderPreparedTime;
 
         DeliveryWorkflow workflow = deliveryScheduler
                 .addToWorkflow(DeliveryWorkflow.build(deliveryScheduler), order,
@@ -187,7 +186,7 @@ public class Restaurant {
             List<DeliveryEvent> deliveryEvents = deliveryScheduler.nextFrame();
 
             if (deliveryEvents != null && deliveryEvents.size() > 0) {
-                deliveryEvents.forEach(event -> {
+                deliveryEvents.parallelStream().forEach(event -> {
                     Order order = event.getDeliveryAction().apply(event.getOrder());
                     event.setOrder(order);
                     event.getDeliveryWorkflow().setCurrentOrderState(order);

@@ -54,7 +54,7 @@ public class LoadSimulatorApplication {
                             .peek(restaurant ->
                                     restaurant.init(new RestaurantProperties(7500L, 1000L, 15.0), orderServiceClient))
                             .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
-                            .limit(1)
+                            .limit(50)
                             .collect(Collectors.toList());
 
             restaurants.forEach(restaurant -> {

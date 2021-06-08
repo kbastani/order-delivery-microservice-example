@@ -1,6 +1,56 @@
-version: "3.3"
+x-superset-depends-on: &superset-depends-on
+  - db
+  - redis
+x-pinot-depends-on: &pinot-depends-on
+  - kafka
+  - zookeeper
+x-order-delivery-service-depends-on: &order-delivery-service-depends-on
+  - mysql
+  - kafka
+  - zookeeper
+x-superset-volumes: &superset-volumes
+  - ./docker/docker-init.sh:/app/docker-init.sh
+  - ./docker/pinot-dashboard.json:/app/pinot-dashboard.json
+  - ./docker/pinot-database.yml:/app/pinot-database.yml
+  - ./docker/pythonpath_dev:/app/pythonpath
+  - superset_home:/app/superset_home
+
+version: "3.7"
 
 services:
+  redis:
+    image: kbastani2/noaa-pinot-superset-cache
+    container_name: superset_cache
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis:/data
+    networks:
+      - PinotNetwork
+  db:
+    env_file: docker/.env
+    image: kbastani2/noaa-pinot-superset-db
+    container_name: superset_db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db_home:/var/lib/postgresql/data
+    networks:
+      - PinotNetwork
+  superset:
+    env_file: docker/.env
+    image: kbastani2/noaa-pinot-superset-app
+    container_name: superset_app
+    command: ["flask", "run", "-p", "8088", "--with-threads", "--reload", "--debugger", "--host=0.0.0.0"]
+    restart: unless-stopped
+    ports:
+      - 8088:8088
+    depends_on: *superset-depends-on
+    volumes: *superset-volumes
+    networks:
+      - PinotNetwork
   kafka:
     environment:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
@@ -12,6 +62,8 @@ services:
       - "29092:29092/tcp"
     deploy:
       replicas: 1
+    networks:
+      - PinotNetwork
   zookeeper:
     environment:
       ZOOKEEPER_CLIENT_PORT: 32181
@@ -21,11 +73,21 @@ services:
       - "32181:32181/tcp"
     deploy:
       replicas: 1
+    networks:
+      - PinotNetwork
   mysql:
-    image: mysql:8
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=bootdb
+      MYSQL_DATABASE: bootdb
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - PinotNetwork
 #  postgres:
 #    image: debezium/example-postgres:latest
 #    ports:
@@ -52,23 +114,39 @@ services:
     ports:
       - "9000:9000/tcp"
       - "8000:8000/tcp"
-    links:
-      - kafka
-      - zookeeper
+    depends_on: *pinot-depends-on
+    networks:
+      - PinotNetwork
   order-delivery-service:
     image: order-web:latest
-    links:
-      - kafka
-      - mysql
     environment:
       SPRING_PROFILES_ACTIVE: docker
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: postgres
     ports:
       - "8080:8080/tcp"
+    depends_on: *order-delivery-service-depends-on
+    restart: on-failure
+    networks:
+      - PinotNetwork
   load-simulator:
     image: load-simulator:latest
-    links:
-      - order-delivery-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    links:
+      - order-delivery-service
+    networks:
+      - PinotNetwork
+
+networks:
+  PinotNetwork:
+    external:
+      name: PinotNetwork
+
+volumes:
+  superset_home:
+    external: false
+  db_home:
+    external: false
+  redis:
+    external: false
+  db_data:
+    external: false

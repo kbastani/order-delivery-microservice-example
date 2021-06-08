@@ -1,0 +1,37 @@
+databases:
+  - database_name: pinot
+    extra: "{\r\n    \"metadata_params\": {},\r\n    \"engine_params\": {},\r\n    \"\
+    metadata_cache_timeout\": {},\r\n    \"schemas_allowed_for_csv_upload\": []\r\n\
+    }"
+    sqlalchemy_uri: pinot+http://pinot:8000/query?server=http%3A%2F%2Fpinot%3A9000%2F
+    tables:
+      - columns:
+          - column_name: createdAt
+            is_dttm: true
+            type: LONG
+          - column_name: location_st_point
+            type: BYTES
+          - column_name: primaryKey
+            type: STRING
+          - column_name: restaurantId
+            type: LONG
+          - column_name: accountId
+            type: LONG
+          - column_name: orderId
+            type: LONG
+          - column_name: eventId
+            type: LONG
+          - column_name: orderStatus
+            type: STRING
+          - column_name: type
+            type: STRING
+          - column_name: orderLocationLat
+            type: LONG
+          - column_name: orderLocationLon
+            type: LONG
+        metrics:
+          - expression: COUNT(*)
+            metric_name: count
+            metric_type: count
+            verbose_name: COUNT(*)
+        table_name: orders
