@@ -1,1 +1,479 @@
-{}
+{
+    "dashboards": [
+        {
+            "__Dashboard__": {
+                "css": "",
+                "dashboard_title": "Order Delivery Dashboard",
+                "description": null,
+                "json_metadata": "{\"timed_refresh_immune_slices\": [], \"filter_scopes\": {\"3\": {\"restaurantCity\": {\"scope\": [\"ROOT_ID\"], \"immune\": []}, \"orderStatus\": {\"scope\": [\"ROOT_ID\"], \"immune\": []}}}, \"expanded_slices\": {}, \"refresh_frequency\": 0, \"default_filters\": \"{\\\"3\\\": {\\\"restaurantCity\\\": [\\\"San Francisco\\\"], \\\"orderStatus\\\": [\\\"ORDER_DELIVERING\\\"]}}\", \"color_scheme\": null, \"remote_id\": 1}",
+                "position_json": "{\"CHART-4QSUdtbqqp\":{\"children\":[],\"id\":\"CHART-4QSUdtbqqp\",\"meta\":{\"chartId\":2,\"height\":48,\"sliceName\":\"Clustered Active Order Deliveries\",\"width\":12},\"parents\":[\"ROOT_ID\",\"GRID_ID\",\"ROW-oMyM16Xgv\"],\"type\":\"CHART\"},\"CHART-PSArglUnFw\":{\"children\":[],\"id\":\"CHART-PSArglUnFw\",\"meta\":{\"chartId\":1,\"height\":50,\"sliceName\":\"Real-time Driver Delivery Map\",\"width\":12},\"parents\":[\"ROOT_ID\",\"GRID_ID\",\"ROW-q58UTsJMKu\"],\"type\":\"CHART\"},\"CHART-hqDelC3fhY\":{\"children\":[],\"id\":\"CHART-hqDelC3fhY\",\"meta\":{\"chartId\":3,\"height\":23,\"sliceName\":\"Order Delivery Filter\",\"width\":5},\"parents\":[\"ROOT_ID\",\"GRID_ID\",\"ROW-iym1a-2y1\"],\"type\":\"CHART\"},\"DASHBOARD_VERSION_KEY\":\"v2\",\"GRID_ID\":{\"children\":[\"ROW-iym1a-2y1\",\"ROW-q58UTsJMKu\",\"ROW-oMyM16Xgv\"],\"id\":\"GRID_ID\",\"parents\":[\"ROOT_ID\"],\"type\":\"GRID\"},\"HEADER_ID\":{\"id\":\"HEADER_ID\",\"meta\":{\"text\":\"Order Delivery Dashboard\"},\"type\":\"HEADER\"},\"ROOT_ID\":{\"children\":[\"GRID_ID\"],\"id\":\"ROOT_ID\",\"type\":\"ROOT\"},\"ROW-iym1a-2y1\":{\"children\":[\"CHART-hqDelC3fhY\"],\"id\":\"ROW-iym1a-2y1\",\"meta\":{\"background\":\"BACKGROUND_TRANSPARENT\"},\"parents\":[\"ROOT_ID\",\"GRID_ID\"],\"type\":\"ROW\"},\"ROW-oMyM16Xgv\":{\"children\":[\"CHART-4QSUdtbqqp\"],\"id\":\"ROW-oMyM16Xgv\",\"meta\":{\"0\":\"ROOT_ID\",\"background\":\"BACKGROUND_TRANSPARENT\"},\"parents\":[\"ROOT_ID\",\"GRID_ID\"],\"type\":\"ROW\"},\"ROW-q58UTsJMKu\":{\"children\":[\"CHART-PSArglUnFw\"],\"id\":\"ROW-q58UTsJMKu\",\"meta\":{\"background\":\"BACKGROUND_TRANSPARENT\"},\"parents\":[\"ROOT_ID\",\"GRID_ID\"],\"type\":\"ROW\"}}",
+                "slices": [
+                    {
+                        "__Slice__": {
+                            "cache_timeout": null,
+                            "datasource_name": "orders",
+                            "datasource_type": "table",
+                            "id": 1,
+                            "params": "{\"adhoc_filters\": [{\"clause\": \"WHERE\", \"comparator\": null, \"expressionType\": \"SQL\", \"filterOptionName\": \"filter_rgdfozjr19_kdewfoo2vi\", \"isExtra\": false, \"isNew\": false, \"operator\": null, \"sqlExpression\": \" ST_DISTANCE(location_st_point, ST_Point(-122.44469, 37.75680, 1)) < 6000\", \"subject\": null}], \"autozoom\": false, \"color_picker\": {\"a\": 0.47, \"b\": 204, \"g\": 188, \"r\": 125}, \"datasource\": \"1__table\", \"extruded\": true, \"filter_nulls\": true, \"granularity_sqla\": \"createdAt\", \"grid_size\": 130, \"js_agg_function\": \"count\", \"js_columns\": [], \"mapbox_style\": \"mapbox://styles/mapbox/light-v9\", \"queryFields\": {\"js_columns\": \"groupby\", \"size\": \"metrics\"}, \"row_limit\": 10000, \"size\": {\"aggregate\": \"COUNT\", \"column\": {\"column_name\": \"orderId\", \"description\": null, \"expression\": null, \"filterable\": true, \"groupby\": true, \"id\": 1, \"is_dttm\": false, \"python_date_format\": null, \"type\": \"LONG\", \"verbose_name\": null}, \"expressionType\": \"SIMPLE\", \"hasCustomLabel\": false, \"isNew\": false, \"label\": \"COUNT(orderId)\", \"optionName\": \"metric_gwcl5zi4vun_3ayfeb9q71a\", \"sqlExpression\": null}, \"slice_id\": 1, \"spatial\": {\"latCol\": \"orderLocationLat\", \"lonCol\": \"orderLocationLon\", \"type\": \"latlong\"}, \"time_range\": \"No filter\", \"time_range_endpoints\": [\"inclusive\", \"exclusive\"], \"url_params\": {}, \"viewport\": {\"altitude\": 1.5, \"bearing\": -129.44309927360783, \"height\": 941, \"latitude\": 37.77943490135, \"longitude\": -122.43449979926329, \"maxPitch\": 60, \"maxZoom\": 20, \"minPitch\": 0, \"minZoom\": 0, \"pitch\": 11.911305561970893, \"position\": [0, 0, 0], \"transitionDuration\": 0, \"width\": 1239, \"zoom\": 12.626796759374884}, \"viz_type\": \"deck_hex\", \"remote_id\": 1, \"datasource_name\": \"orders\", \"schema\": null, \"database_name\": \"pinot\"}",
+                            "slice_name": "Real-time Driver Delivery Map",
+                            "viz_type": "deck_hex"
+                        }
+                    },
+                    {
+                        "__Slice__": {
+                            "cache_timeout": null,
+                            "datasource_name": "orders",
+                            "datasource_type": "table",
+                            "id": 2,
+                            "params": "{\"adhoc_filters\": [{\"clause\": \"WHERE\", \"comparator\": null, \"expressionType\": \"SQL\", \"filterOptionName\": \"filter_h5g6vhfon7w_6mtotr0nbt6\", \"isExtra\": false, \"isNew\": false, \"operator\": null, \"sqlExpression\": \" ST_DISTANCE(location_st_point, ST_Point(-122.44469, 37.75680, 1)) < 6000\", \"subject\": null}, {\"clause\": \"WHERE\", \"comparator\": \"ORDER_DELIVERING\", \"expressionType\": \"SIMPLE\", \"filterOptionName\": \"filter_5i91e2frowv_pl2kwtdorla\", \"isExtra\": false, \"isNew\": false, \"operator\": \"==\", \"sqlExpression\": null, \"subject\": \"orderStatus\"}], \"all_columns_x\": \"orderLocationLon\", \"all_columns_y\": \"orderLocationLat\", \"clustering_radius\": \"60\", \"datasource\": \"1__table\", \"global_opacity\": 0.5, \"granularity_sqla\": \"createdAt\", \"groupby\": null, \"mapbox_color\": \"rgb(0, 122, 135)\", \"mapbox_label\": [], \"mapbox_style\": \"mapbox://styles/mapbox/light-v9\", \"pandas_aggfunc\": \"sum\", \"point_radius\": \"Auto\", \"point_radius_unit\": \"Kilometers\", \"queryFields\": {\"groupby\": \"groupby\"}, \"render_while_dragging\": true, \"row_limit\": 50000, \"time_range\": \"No filter\", \"time_range_endpoints\": [\"inclusive\", \"exclusive\"], \"url_params\": {}, \"viewport_latitude\": 37.779945298897104, \"viewport_longitude\": -122.42557090927068, \"viewport_zoom\": 12.92041959921013, \"viz_type\": \"mapbox\", \"remote_id\": 2, \"datasource_name\": \"orders\", \"schema\": null, \"database_name\": \"pinot\"}",
+                            "slice_name": "Clustered Active Order Deliveries",
+                            "viz_type": "mapbox"
+                        }
+                    },
+                    {
+                        "__Slice__": {
+                            "cache_timeout": null,
+                            "datasource_name": "orders",
+                            "datasource_type": "table",
+                            "id": 3,
+                            "params": "{\"adhoc_filters\": [], \"datasource\": \"1__table\", \"date_filter\": false, \"filter_configs\": [{\"asc\": true, \"clearable\": true, \"column\": \"restaurantCity\", \"defaultValue\": \"San Francisco\", \"key\": \"No13Y8Tnn\", \"label\": \"Restaurant City\", \"multiple\": true, \"searchAllOptions\": true}, {\"asc\": true, \"clearable\": true, \"column\": \"orderStatus\", \"defaultValue\": \"ORDER_DELIVERED\", \"key\": \"L-A3JOvqr\", \"label\": \"Order Status\", \"multiple\": true, \"searchAllOptions\": true}], \"granularity_sqla\": \"createdAt\", \"instant_filtering\": true, \"queryFields\": {}, \"slice_id\": 3, \"time_range\": \"No filter\", \"time_range_endpoints\": [\"inclusive\", \"exclusive\"], \"url_params\": {}, \"viz_type\": \"filter_box\", \"remote_id\": 3, \"datasource_name\": \"orders\", \"schema\": null, \"database_name\": \"pinot\"}",
+                            "slice_name": "Order Delivery Filter",
+                            "viz_type": "filter_box"
+                        }
+                    }
+                ],
+                "slug": null
+            }
+        }
+    ],
+    "datasources": [
+        {
+            "__SqlaTable__": {
+                "cache_timeout": null,
+                "columns": [
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "orderId",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 1,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "primaryKey",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 2,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "STRING",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "accountId",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 3,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "eventId",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 4,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "orderStatus",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 5,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "STRING",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "type",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 6,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "STRING",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "orderLocationLon",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 7,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "orderLocationLat",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 8,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurantId",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 9,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "location_st_point",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 10,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "BYTES",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "createdAt",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-04T17:54:44"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 11,
+                            "is_active": null,
+                            "is_dttm": true,
+                            "python_date_format": "epoch_ms",
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurantLon",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-10T15:13:17"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 12,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurantLat",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-10T15:13:17"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 13,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "LONG",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurantName",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-10T15:13:17"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 14,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "STRING",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurantCity",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-10T15:13:17"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 15,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "STRING",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurantCountry",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-10T15:13:17"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 16,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "STRING",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2021-06-10T15:20:09"
+                            },
+                            "column_name": "restaurant_st_point",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2021-06-10T15:13:17"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 17,
+                            "is_active": null,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 1,
+                            "type": "BYTES",
+                            "verbose_name": null
+                        }
+                    }
+                ],
+                "database_id": 1,
+                "default_endpoint": null,
+                "description": null,
+                "fetch_values_predicate": null,
+                "filter_select_enabled": false,
+                "main_dttm_col": null,
+                "metrics": [],
+                "offset": 0,
+                "params": "{\"remote_id\": 1, \"database_name\": \"pinot\"}",
+                "schema": null,
+                "sql": null,
+                "table_name": "orders",
+                "template_params": null
+            }
+        }
+    ]
+}

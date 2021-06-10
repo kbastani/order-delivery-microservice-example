@@ -4,6 +4,7 @@ import demo.domain.Service;
 import demo.order.event.OrderEvent;
 import demo.order.event.OrderEventType;
 import demo.order.repository.OrderRepository;
+import demo.restaurant.domain.RestaurantRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -11,9 +12,11 @@ import org.springframework.util.Assert;
 public class OrderService extends Service<Order, Long> {
 
     private final OrderRepository orderRepository;
+    private final RestaurantRepository restaurantRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, RestaurantRepository restaurantRepository) {
         this.orderRepository = orderRepository;
+        this.restaurantRepository = restaurantRepository;
     }
 
     public Order registerOrder(Order order) {
@@ -66,8 +69,11 @@ public class OrderService extends Service<Order, Long> {
 
         Order currentOrder = get(order.getIdentity());
         currentOrder.setAccountId(order.getAccountId());
-        currentOrder.setRestaurantId(order.getRestaurantId());
         currentOrder.setStatus(order.getStatus());
+
+        if (order.getRestaurant() != null)
+            currentOrder.setRestaurant(restaurantRepository
+                    .findByStoreId(order.getRestaurant().getStoreId()).orElse(null));
 
         return orderRepository.saveAndFlush(currentOrder);
     }

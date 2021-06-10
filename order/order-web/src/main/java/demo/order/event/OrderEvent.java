@@ -50,6 +50,11 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     private Double orderLocationLon;
 
     private Long restaurantId;
+    private String restaurantName;
+    private String restaurantCity;
+    private String restaurantCountry;
+    private Double restaurantLat;
+    private Double restaurantLon;
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
@@ -73,10 +78,18 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
         this.entity = entity;
         this.orderId = entity.getIdentity();
         this.orderStatus = entity.getStatus();
-        this.restaurantId = entity.getRestaurantId();
         this.orderLocationLat = entity.getLat();
         this.orderLocationLon = entity.getLon();
         this.primaryKey = entity.getIdentity();
+
+        if(entity.getRestaurant() != null) {
+            this.restaurantId = entity.getRestaurant().getStoreId();
+            this.restaurantName = entity.getRestaurant().getName();
+            this.restaurantCity = entity.getRestaurant().getCity();
+            this.restaurantCountry = entity.getRestaurant().getCountry();
+            this.restaurantLat = entity.getRestaurant().getLatitude();
+            this.restaurantLon = entity.getRestaurant().getLongitude();
+        }
     }
 
     @Override
@@ -149,6 +162,46 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
 
     public void setRestaurantId(Long restaurantId) {
         this.restaurantId = restaurantId;
+    }
+
+    public String getRestaurantName() {
+        return restaurantName;
+    }
+
+    public void setRestaurantName(String restaurantName) {
+        this.restaurantName = restaurantName;
+    }
+
+    public String getRestaurantCity() {
+        return restaurantCity;
+    }
+
+    public void setRestaurantCity(String restaurantCity) {
+        this.restaurantCity = restaurantCity;
+    }
+
+    public String getRestaurantCountry() {
+        return restaurantCountry;
+    }
+
+    public void setRestaurantCountry(String restaurantCountry) {
+        this.restaurantCountry = restaurantCountry;
+    }
+
+    public Double getRestaurantLat() {
+        return restaurantLat;
+    }
+
+    public void setRestaurantLat(Double restaurantLat) {
+        this.restaurantLat = restaurantLat;
+    }
+
+    public Double getRestaurantLon() {
+        return restaurantLon;
+    }
+
+    public void setRestaurantLon(Double restaurantLon) {
+        this.restaurantLon = restaurantLon;
     }
 
     @Override

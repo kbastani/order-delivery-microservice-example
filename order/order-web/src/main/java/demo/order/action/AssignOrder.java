@@ -7,6 +7,8 @@ import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
 import demo.order.event.OrderEventType;
+import demo.restaurant.domain.Restaurant;
+import demo.restaurant.domain.RestaurantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,14 +24,24 @@ import org.springframework.util.Assert;
 @Transactional
 public class AssignOrder extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final RestaurantRepository restaurantRepository;
+
+    public AssignOrder(RestaurantRepository restaurantRepository) {
+        this.restaurantRepository = restaurantRepository;
+    }
 
     public Order apply(Order order, Long restaurantId) {
         Assert.isTrue(order.getStatus() == OrderStatus.ORDER_CREATED, "Order must be in a created state");
 
         OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
 
-        // Connect the account
-        order.setRestaurantId(restaurantId);
+        // Lookup the store and connect it to the order
+        Restaurant restaurant = restaurantRepository.findByStoreId(restaurantId).orElse(null);
+
+        if(restaurant == null)
+            throw new RuntimeException("The restaurant with the provided storeId does not exist.");
+
+        order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.ORDER_ASSIGNED);
         order = orderService.update(order);
 

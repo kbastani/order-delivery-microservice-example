@@ -39,9 +39,34 @@
       "dataType": "LONG"
     },
     {
+      "name": "restaurantLon",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "restaurantLat",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "restaurantName",
+      "dataType": "STRING"
+    },
+    {
+      "name": "restaurantCity",
+      "dataType": "STRING"
+    },
+    {
+      "name": "restaurantCountry",
+      "dataType": "STRING"
+    },
+    {
       "dataType": "BYTES",
       "name": "location_st_point",
       "transformFunction": "toSphericalGeography(stPoint(orderLocationLon,orderLocationLat))"
+    },
+    {
+      "dataType": "BYTES",
+      "name": "restaurant_st_point",
+      "transformFunction": "toSphericalGeography(stPoint(restaurantLon,restaurantLat))"
     }
   ],
   "dateTimeFieldSpecs": [

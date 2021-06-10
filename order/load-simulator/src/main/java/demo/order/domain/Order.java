@@ -12,8 +12,7 @@ public class Order {
     private Double lon;
     private Double customerLat;
     private Double customerLon;
-
-    private Long accountId, restaurantId;
+    private Long accountId;
 
     public Order() {
         this.status = OrderStatus.ORDER_CREATED;
@@ -46,14 +45,6 @@ public class Order {
 
     public void setAccountId(Long accountId) {
         this.accountId = accountId;
-    }
-
-    public Long getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Long restaurantId) {
-        this.restaurantId = restaurantId;
     }
 
     public Double getLat() {
@@ -113,8 +104,9 @@ public class Order {
                 ", lastModified=" + lastModified +
                 ", lat=" + lat +
                 ", lon=" + lon +
+                ", customerLat=" + customerLat +
+                ", customerLon=" + customerLon +
                 ", accountId=" + accountId +
-                ", restaurantId=" + restaurantId +
                 '}';
     }
 }

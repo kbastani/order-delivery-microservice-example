@@ -21,12 +21,21 @@
       "properties": {
         "resolutions": "5"
       }
+    },
+    {
+      "name": "restaurant_st_point",
+      "encodingType": "RAW",
+      "indexType": "H3",
+      "properties": {
+        "resolutions": "5"
+      }
     }
   ],
   "tableIndexConfig": {
     "loadMode": "MMAP",
     "noDictionaryColumns": [
-      "location_st_point"
+      "location_st_point",
+      "restaurant_st_point"
     ],
     "streamConfigs": {
       "streamType": "kafka",

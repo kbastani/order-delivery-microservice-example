@@ -16,6 +16,9 @@ spring:
             partition-key-expression: headers['primaryKey']
             partition-count: 12
             requiredGroups: order-group
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
 server:
   port: 8080
 events:

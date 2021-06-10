@@ -10,6 +10,7 @@ import demo.domain.Module;
 import demo.order.action.*;
 import demo.order.controller.OrderController;
 import demo.order.event.OrderEvent;
+import demo.restaurant.domain.Restaurant;
 import org.springframework.hateoas.Link;
 
 import javax.persistence.*;
@@ -32,7 +33,10 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     @Column
     private Double lon;
 
-    private Long accountId, restaurantId;
+    private Long accountId;
+
+    @OneToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    private Restaurant restaurant;
 
     public Order() {
         this.status = OrderStatus.ORDER_CREATED;
@@ -70,14 +74,6 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
         this.accountId = accountId;
     }
 
-    public Long getRestaurantId() {
-        return restaurantId;
-    }
-
-    public void setRestaurantId(Long restaurantId) {
-        this.restaurantId = restaurantId;
-    }
-
     public Double getLat() {
         return lat;
     }
@@ -92,6 +88,14 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
 
     public void setLon(Double lon) {
         this.lon = lon;
+    }
+
+    public Restaurant getRestaurant() {
+        return restaurant;
+    }
+
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
     }
 
     @Command(method = "assignOrder", controller = OrderController.class)
