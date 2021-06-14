@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import demo.order.client.OrderServiceClient;
 import demo.restaurant.config.RestaurantProperties;
 import demo.restaurant.domain.Restaurant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -31,6 +33,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class LoadSimulatorApplication {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
+
     public static void main(String[] args) {
         SpringApplication.run(LoadSimulatorApplication.class, args);
     }
@@ -50,9 +54,12 @@ public class LoadSimulatorApplication {
             String file = resourceAsString(new ClassPathResource("/static/locations.json"));
             ObjectMapper mapper = new ObjectMapper();
 
+            log.info("Waiting 60 seconds before starting the order simulation...");
+            Thread.sleep(60000);
+
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
-                            .filter(restaurant -> restaurant.getCity().equals("SF"))
+                            .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
                             .sorted(Comparator.comparingInt(Restaurant::getStoreId))
                             .limit(50)
                             .peek(restaurant ->
