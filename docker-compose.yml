@@ -51,41 +51,51 @@ services:
     volumes: *superset-volumes
     networks:
       - PinotNetwork
-  kafka:
-    environment:
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
-      KAFKA_BROKER_ID: 1
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-    image: confluentinc/cp-kafka:latest
+  zookeeper:
+    image: debezium/zookeeper:1.5
     ports:
-      - "29092:29092/tcp"
-    deploy:
-      replicas: 1
+      - 2181:2181
+      - 2888:2888
+      - 3888:3888
     networks:
       - PinotNetwork
-  zookeeper:
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 32181
-      ZOOKEEPER_TICK_TIME: 2000
-    image: confluentinc/cp-zookeeper:latest
+  kafka:
+    image: debezium/kafka:1.5
     ports:
-      - "32181:32181/tcp"
-    deploy:
-      replicas: 1
+      - 9092:9092
+    links:
+      - zookeeper
+    environment:
+      - ADVERTISED_HOST_NAME=192.168.178.28
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+    networks:
+      - PinotNetwork
+  connect:
+    image: debezium/connect:1.5
+    ports:
+      - 8083:8083
+    links:
+      - kafka
+      - mysql
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
     networks:
       - PinotNetwork
   mysql:
-    image: mysql:5.7
+    image: debezium/example-mysql:1.5
     ports:
-      - "3306:3306"
-    restart: always
+      - 3306:3306
     environment:
-      MYSQL_DATABASE: bootdb
-      MYSQL_PASSWORD: root
-      MYSQL_ROOT_PASSWORD: root
+      - MYSQL_ROOT_PASSWORD=debezium
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=mysqlpw
     volumes:
-      - db_data:/var/lib/mysql
+#     - db_data:/var/lib/mysql
+      - ./mysql_init.sql:/docker-entrypoint-initdb.d/mysql_init.sql
     networks:
       - PinotNetwork
 #  postgres:
