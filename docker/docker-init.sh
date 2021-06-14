@@ -60,5 +60,5 @@ echo_step "5" "Complete" "Importing the Pinot datasource"
 
 # Import Pinot dashboards
 echo_step "6" "Starting" "Importing the Pinot dashboards"
-#superset import-dashboards --path ./pinot-dashboard.json
+superset import-dashboards --path ./pinot-dashboard.json
 echo_step "6" "Complete" "Importing the Pinot dashboards"

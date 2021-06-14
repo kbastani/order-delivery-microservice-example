@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -38,11 +41,14 @@ public class OrderWeb {
             ObjectMapper mapper = new ObjectMapper();
 
             try {
-                Stream.of(mapper.readValue(file, Restaurant[].class))
-                        .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
+                restaurantRepository.saveAll(Stream.of(mapper.readValue(file, Restaurant[].class))
+                        .filter(restaurant -> restaurant.getCity().equals("SF"))
+                        .sorted(Comparator.comparingLong(Restaurant::getStoreId))
                         .limit(50)
                         .filter(restaurant -> !restaurantRepository.exists(Example.of(restaurant)))
-                        .forEach(restaurantRepository::save);
+                        .collect(Collectors.toList()));
+
+                System.out.println(Arrays.toString(restaurantRepository.findAll().toArray(new Restaurant[]{})));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }

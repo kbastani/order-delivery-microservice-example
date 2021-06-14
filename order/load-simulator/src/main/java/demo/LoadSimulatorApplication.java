@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,10 +52,12 @@ public class LoadSimulatorApplication {
 
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
-                            .peek(restaurant ->
-                                    restaurant.init(new RestaurantProperties(7500L, 1000L, 15.0), orderServiceClient))
-                            .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
+                            .filter(restaurant -> restaurant.getCity().equals("SF"))
+                            .sorted(Comparator.comparingInt(Restaurant::getStoreId))
                             .limit(50)
+                            .peek(restaurant ->
+                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 7000.0) +
+                                            7000L, 1000L, 15.0), orderServiceClient))
                             .collect(Collectors.toList());
 
             restaurants.forEach(restaurant -> {
