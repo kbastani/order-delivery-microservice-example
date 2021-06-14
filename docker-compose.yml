@@ -66,7 +66,7 @@ services:
     links:
       - zookeeper
     environment:
-      - ADVERTISED_HOST_NAME=192.168.178.28
+      - ADVERTISED_HOST_NAME=kafka
       - ZOOKEEPER_CONNECT=zookeeper:2181
     networks:
       - PinotNetwork
