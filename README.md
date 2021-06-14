@@ -53,6 +53,36 @@ $ docker run --tty --rm -i \
     bash -c 'mycli mysql://mysqluser@mysql:3306/orderweb --password mysqlpw'
 ```
 
+Listing all topics in Kafka:
+
+```
+$ docker-compose exec kafka /kafka/bin/kafka-topics.sh --zookeeper zookeeper:2181 --list
+```
+
+Reading contents of "order" topic:
+
+```
+$ docker run --tty --rm \
+    --network PinotNetwork \
+    debezium/tooling:1.1 \
+    kafkacat -b kafka:9092 -C -o beginning -q \
+    -t order
+```
+
+Registering Debezium MySQL connector:
+
+```
+$ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
+    http://localhost:8083/connectors/orderweb/config -d @debezium-mysql-connector.json
+```
+
+Getting status of "orderweb" connector:
+
+```
+$ curl -i -X GET -H "Accept:application/json" -H  "Content-Type:application/json" \
+    http://localhost:8083/connectors/orderweb/status
+```
+
 ## License
 
 This project is an open source product licensed under Apache License v2.

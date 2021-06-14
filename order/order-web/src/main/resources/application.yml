@@ -30,7 +30,7 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: "PLAINTEXT://kafka:29092"
+          brokers: "PLAINTEXT://kafka:9092"
   jpa:
     show_sql: false
     database: H2
@@ -47,7 +47,7 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: "PLAINTEXT://kafka:29092"
+          brokers: "PLAINTEXT://kafka:9092"
   datasource:
     hikari:
       maximum-pool-size: 100
