@@ -35,6 +35,24 @@ API usage information for the `order-web` service can be found [here](order/READ
   - Show current deliveries by restaurant id
   - Show current deliveries by restaurant city
 
-# License
+## Build
+
+```bash
+$ mvn clean verify -DskipTests=true
+$ docker-compose up
+```
+
+## Useful Commands
+
+Getting a shell in MySQL:
+
+```
+$ docker run --tty --rm -i \
+    --network PinotNetwork \
+    debezium/tooling:1.1 \
+    bash -c 'mycli mysql://mysqluser@mysql:3306/orderweb --password mysqlpw'
+```
+
+## License
 
 This project is an open source product licensed under Apache License v2.

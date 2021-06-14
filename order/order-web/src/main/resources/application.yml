@@ -50,16 +50,16 @@ spring:
           brokers: "PLAINTEXT://kafka:29092"
   datasource:
     hikari:
-      maximum-pool-size: 10000
+      maximum-pool-size: 100
     platform: mysql
-    url: jdbc:mysql://mysql:3306/bootdb
-    username: root
-    password: root
+    url: jdbc:mysql://mysql:3306/orderweb
+    username: mysqluser
+    password: mysqlpw
     initialization-mode: always
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     generate-ddl: true
 ---
 spring:
