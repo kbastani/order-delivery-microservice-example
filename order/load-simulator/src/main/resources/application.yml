@@ -13,3 +13,11 @@ spring:
         - docker
 order-service:
   host: "order-delivery-service"
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - test
+order-service:
+  host: "localhost"

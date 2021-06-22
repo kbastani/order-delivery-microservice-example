@@ -94,30 +94,10 @@ services:
       - MYSQL_USER=mysqluser
       - MYSQL_PASSWORD=mysqlpw
     volumes:
-#     - db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./mysql_init.sql:/docker-entrypoint-initdb.d/mysql_init.sql
     networks:
       - PinotNetwork
-#  postgres:
-#    image: debezium/example-postgres:latest
-#    ports:
-#      - 5432:5432
-#    environment:
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: postgres
-#  connect:
-#    image: debezium/connect:latest
-#    ports:
-#      - 8083:8083
-#    links:
-#      - kafka
-#      - postgres
-#    environment:
-#      - BOOTSTRAP_SERVERS=kafka:29092
-#      - GROUP_ID=1
-#      - CONFIG_STORAGE_TOPIC=my_connect_configs
-#      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-#      - STATUS_STORAGE_TOPIC=my_connect_statuses
   pinot:
     image: apachepinot/pinot:release-0.7.1
     command: "QuickStart -type stream"
@@ -159,4 +139,4 @@ volumes:
   redis:
     external: false
   db_data:
-    external: false
+    external: true

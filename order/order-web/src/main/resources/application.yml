@@ -13,7 +13,7 @@ spring:
           contentType: 'application/json'
           group: order-group
           producer:
-            partition-key-expression: headers['primaryKey']
+            partition-key-expression: headers['aggregateId']
             partition-count: 12
             requiredGroups: order-group
   jackson:
@@ -53,13 +53,20 @@ spring:
           brokers: "PLAINTEXT://kafka:9092"
   datasource:
     hikari:
-      maximum-pool-size: 100
+      maximum-pool-size: 1000
+      connection-timeout: 6000
     platform: mysql
     url: jdbc:mysql://mysql:3306/orderweb
     username: mysqluser
     password: mysqlpw
     initialization-mode: always
   jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
+        jdbc:
+          batch_size: 50
     hibernate:
       ddl-auto: update
     show-sql: true

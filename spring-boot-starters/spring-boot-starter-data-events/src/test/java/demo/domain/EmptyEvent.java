@@ -36,12 +36,12 @@ public class EmptyEvent extends Event {
     }
 
     @Override
-    public Long getPrimaryKey() {
+    public Long getAggregateId() {
         return null;
     }
 
     @Override
-    public void setPrimaryKey(Long primaryKey) {
+    public void setAggregateId(Long aggregateId) {
 
     }
 

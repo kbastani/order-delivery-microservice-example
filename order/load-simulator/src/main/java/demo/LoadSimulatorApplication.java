@@ -11,10 +11,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -42,29 +45,40 @@ public class LoadSimulatorApplication {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(15000))
-                .setReadTimeout(Duration.ofMillis(15000))
+                .setConnectTimeout(Duration.ofMillis(30000))
+                .setReadTimeout(Duration.ofMillis(30000))
                 .build();
     }
 
     @Bean
+    public RetryTemplate retryTemplate() {
+        return RetryTemplate.builder()
+                .maxAttempts(10)
+                .exponentialBackoff(100, 10, 10000)
+                .retryOn(RestClientException.class)
+                .traversingCauses()
+                .build();
+    }
+
+    @Bean
+    @Profile("docker")
     public CommandLineRunner commandLineRunner(OrderServiceClient orderServiceClient) {
         return (args) -> {
 
             String file = resourceAsString(new ClassPathResource("/static/locations.json"));
             ObjectMapper mapper = new ObjectMapper();
 
-            log.info("Waiting 60 seconds before starting the order simulation...");
-            Thread.sleep(60000);
+            //log.info("Waiting 60 seconds before starting the order simulation...");
+            //Thread.sleep(60000);
 
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
                             .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
                             .sorted(Comparator.comparingInt(Restaurant::getStoreId))
-                            .limit(50)
+                            .limit(10)
                             .peek(restaurant ->
-                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 7000.0) +
-                                            7000L, 1000L, 15.0), orderServiceClient))
+                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 30000L) +
+                                            30000L, 1000L, 15.0), orderServiceClient))
                             .collect(Collectors.toList());
 
             restaurants.forEach(restaurant -> {

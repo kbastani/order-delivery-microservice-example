@@ -39,9 +39,9 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
 
     public abstract void setEntity(T entity);
 
-    public abstract Long getPrimaryKey();
+    public abstract Long getAggregateId();
 
-    public abstract void setPrimaryKey(Long primaryKey);
+    public abstract void setAggregateId(Long aggregateId);
 
     public abstract Long getCreatedAt();
 
@@ -70,6 +70,6 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
 
     @Override
     public String toString() {
-        return String.format("links: %s", getLinks().toString());
+        return "Event{} " + super.toString();
     }
 }

@@ -103,7 +103,7 @@
                             "changed_on": {
                                 "__datetime__": "2021-06-10T15:20:09"
                             },
-                            "column_name": "primaryKey",
+                            "column_name": "aggregateId",
                             "created_by_fk": 1,
                             "created_on": {
                                 "__datetime__": "2021-06-04T17:54:44"

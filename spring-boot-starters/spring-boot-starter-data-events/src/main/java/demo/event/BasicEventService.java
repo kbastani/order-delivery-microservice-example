@@ -72,7 +72,7 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
         return eventSource.getChannel()
                 .send(MessageBuilder.withPayload(event)
                         .setHeader("contentType", MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .setHeader("primaryKey", event.getPrimaryKey())
+                        .setHeader("aggregateId", event.getAggregateId())
                         .build());
     }
 
@@ -91,7 +91,7 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
     }
 
     public <E extends Events> E find(ID entityId) {
-        return (E) new Events(entityId, eventRepository.findEventsByEntityId(entityId,
+        return (E) new Events(entityId, eventRepository.findEventsByOrderId(entityId,
                 PageRequest.of(0, Integer.MAX_VALUE))
                 .getContent());
     }

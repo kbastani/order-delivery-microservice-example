@@ -44,7 +44,7 @@ public class OrderWeb {
                 restaurantRepository.saveAll(Stream.of(mapper.readValue(file, Restaurant[].class))
                         .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
                         .sorted(Comparator.comparingLong(Restaurant::getStoreId))
-                        .limit(50)
+                        .limit(10)
                         .filter(restaurant -> !restaurantRepository.exists(Example.of(restaurant)))
                         .collect(Collectors.toList()));
 

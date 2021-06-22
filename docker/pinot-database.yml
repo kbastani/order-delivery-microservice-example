@@ -17,7 +17,7 @@ databases:
       type: STRING
     - column_name: restaurantCountry
       type: STRING
-    - column_name: primaryKey
+    - column_name: aggregateId
       type: STRING
     - column_name: restaurantId
       type: LONG

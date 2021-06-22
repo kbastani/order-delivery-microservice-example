@@ -1,13 +1,13 @@
 {
   "schemaName": "orders",
-  "primaryKeyColumns": ["primaryKey"],
+  "primaryKeyColumns": ["aggregateId"],
   "dimensionFieldSpecs": [
     {
       "name": "orderId",
       "dataType": "LONG"
     },
     {
-      "name": "primaryKey",
+      "name": "aggregateId",
       "dataType": "STRING"
     },
     {
