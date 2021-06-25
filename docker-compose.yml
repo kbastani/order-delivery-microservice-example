@@ -83,6 +83,9 @@ services:
       - CONFIG_STORAGE_TOPIC=my_connect_configs
       - OFFSET_STORAGE_TOPIC=my_connect_offsets
       - STATUS_STORAGE_TOPIC=my_connect_statuses
+    volumes:
+      # from https://github.com/RedHatInsights/expandjsonsmt/
+      - ./kafka-connect-smt-expandjsonsmt-0.0.7-assemble-all.jar:/kafka/connect/debezium-connector-mysql/expandjsonsmt.jar
     networks:
       - PinotNetwork
   mysql:
