@@ -1,22 +1,15 @@
 package demo.order.event;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
-import java.util.Objects;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import demo.event.Event;
+import demo.order.controller.OrderController;
+import demo.order.domain.Order;
+import demo.order.domain.OrderStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,17 +17,11 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.hateoas.Link;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import javax.persistence.*;
+import java.util.Date;
+import java.util.Objects;
 
-import demo.event.Event;
-import demo.order.controller.OrderController;
-import demo.order.domain.Order;
-import demo.order.domain.OrderStatus;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 /**
  * The domain event {@link OrderEvent} tracks the type and state of events as applied to the {@link Order} domain
@@ -88,10 +75,12 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     private String orderPayload;
 
     @CreatedDate
-    private Long createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
 
     @LastModifiedDate
-    private Long lastModified;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastModified;
 
     public OrderEvent() {
     }
@@ -160,7 +149,8 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
         try {
             ObjectMapper objectMapper = new ObjectMapper()
                     .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-                    .configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
+                    .configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false)
+                    .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
             orderPayload = objectMapper.writeValueAsString(entity);
         } catch (JsonProcessingException e) {
             log.error("Error serializing entity payload", e);
@@ -266,22 +256,20 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     }
 
     @Override
-    public Long getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    @Override
-    public void setCreatedAt(Long createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
     @Override
-    public Long getLastModified() {
+    public Date getLastModified() {
         return lastModified;
     }
 
-    @Override
-    public void setLastModified(Long lastModified) {
+    public void setLastModified(Date lastModified) {
         this.lastModified = lastModified;
     }
 

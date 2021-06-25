@@ -2,12 +2,14 @@ package demo.order.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Date;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Order {
     private Long orderId;
     private OrderStatus status;
-    private Long createdAt;
-    private Long lastModified;
+    private Date createdAt;
+    private Date lastModified;
     private Double lat;
     private Double lon;
     private Double customerLat;
@@ -79,19 +81,19 @@ public class Order {
         this.customerLon = customerLon;
     }
 
-    public Long getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Long createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Long getLastModified() {
+    public Date getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(Long lastModified) {
+    public void setLastModified(Date lastModified) {
         this.lastModified = lastModified;
     }
 

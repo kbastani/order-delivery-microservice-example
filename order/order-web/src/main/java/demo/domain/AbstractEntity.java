@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @MappedSuperclass
@@ -18,10 +19,12 @@ public abstract class AbstractEntity<E extends Event, T extends Serializable> ex
     private T identity;
 
     @CreatedDate
-    private Long createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
 
     @LastModifiedDate
-    private Long lastModified;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastModified;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<E> events = new ArrayList<>();
@@ -29,19 +32,19 @@ public abstract class AbstractEntity<E extends Event, T extends Serializable> ex
     public AbstractEntity() {
     }
 
-    public Long getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Long createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Long getLastModified() {
+    public Date getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(Long lastModified) {
+    public void setLastModified(Date lastModified) {
         this.lastModified = lastModified;
     }
 

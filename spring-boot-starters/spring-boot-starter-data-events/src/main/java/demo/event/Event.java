@@ -6,9 +6,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
-import java.lang.reflect.ParameterizedType;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,13 +44,13 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
 
     public abstract void setAggregateId(Long aggregateId);
 
-    public abstract Long getCreatedAt();
+    public abstract Date getCreatedAt();
 
-    public abstract void setCreatedAt(Long createdAt);
+    public abstract void setCreatedAt(Date createdAt);
 
-    public abstract Long getLastModified();
+    public abstract Date getLastModified();
 
-    public abstract void setLastModified(Long lastModified);
+    public abstract void setLastModified(Date lastModified);
 
     @JsonIgnore
     public Link getId() {

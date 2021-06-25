@@ -3,6 +3,7 @@ package demo.domain;
 import demo.event.Event;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class EmptyEvent extends Event {
     @Override
@@ -46,22 +47,24 @@ public class EmptyEvent extends Event {
     }
 
     @Override
-    public Long getCreatedAt() {
+    public Date getCreatedAt() {
         return null;
     }
 
     @Override
-    public void setCreatedAt(Long createdAt) {
+    public void setCreatedAt(Date createdAt) {
 
     }
 
     @Override
-    public Long getLastModified() {
+    public Date getLastModified() {
         return null;
     }
 
     @Override
-    public void setLastModified(Long lastModified) {
+    public void setLastModified(Date lastModified) {
 
     }
+
+
 }
