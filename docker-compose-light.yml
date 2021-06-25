@@ -1,6 +1,3 @@
-x-pinot-depends-on: &pinot-depends-on
-  - kafka
-  - zookeeper
 x-order-delivery-service-depends-on: &order-delivery-service-depends-on
   - mysql
   - kafka
@@ -55,15 +52,6 @@ services:
       - /var/lib/mysql
     volumes:
      - ./mysql_init.sql:/docker-entrypoint-initdb.d/mysql_init.sql
-    networks:
-      - PinotNetwork
-  pinot:
-    image: apachepinot/pinot:release-0.7.1
-    command: "QuickStart -type batch"
-    ports:
-      - "9000:9000/tcp"
-      - "8000:8000/tcp"
-    depends_on: *pinot-depends-on
     networks:
       - PinotNetwork
   order-delivery-service:
