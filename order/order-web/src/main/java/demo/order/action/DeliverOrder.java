@@ -9,9 +9,11 @@ import demo.order.event.OrderEvent;
 import demo.order.event.OrderEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @Transactional
@@ -20,8 +22,12 @@ public class DeliverOrder extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public Order apply(Order order) {
+        try {
         Assert.isTrue(order
                 .getStatus() == OrderStatus.ORDER_PICKED_UP, "Order must be in an ORDER_PICKED_UP state");
+        } catch (Exception ex) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
 
         OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
 

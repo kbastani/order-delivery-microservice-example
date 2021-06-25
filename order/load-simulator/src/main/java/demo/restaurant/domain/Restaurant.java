@@ -115,11 +115,15 @@ public class Restaurant {
                     (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(4.0)),
                     DeliveryEventType.ORDER_LOCATION_UPDATED, (orderItem) -> {
                         Order updatedOrder = orderServiceClient.get(order.getOrderId());
-                        double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
-                                new double[]{updatedOrder.getLat(), updatedOrder.getLon()}, newBearing,
-                                (Math.random() / 2.0) + .25);
-                        return orderServiceClient.updateOrderLocation(order.getOrderId(), newDriverPosition[0],
-                                newDriverPosition[1]);
+                        if(updatedOrder != null && updatedOrder.getLat() != null && updatedOrder.getLon() != null) {
+                            double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
+                                    new double[]{updatedOrder.getLat(), updatedOrder.getLon()}, newBearing,
+                                    (Math.random() / 2.0) + .25);
+                            return orderServiceClient.updateOrderLocation(order.getOrderId(), newDriverPosition[0],
+                                    newDriverPosition[1]);
+                        } else {
+                            return orderItem;
+                        }
                     });
         });
 

@@ -54,7 +54,7 @@ public class LoadSimulatorApplication {
     public RetryTemplate retryTemplate() {
         return RetryTemplate.builder()
                 .maxAttempts(10)
-                .exponentialBackoff(100, 10, 10000)
+                .exponentialBackoff(1000, 10, 10000)
                 .retryOn(RestClientException.class)
                 .traversingCauses()
                 .build();
@@ -73,12 +73,12 @@ public class LoadSimulatorApplication {
 
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
-                            .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
+                            .filter(restaurant -> restaurant.getCountry().equals("US"))
                             .sorted(Comparator.comparingInt(Restaurant::getStoreId))
-                            .limit(10)
+                            .limit(200)
                             .peek(restaurant ->
-                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 30000L) +
-                                            30000L, 1000L, 15.0), orderServiceClient))
+                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 100000.0) +
+                                            100000L, 1000L, 15.0), orderServiceClient))
                             .collect(Collectors.toList());
 
             restaurants.forEach(restaurant -> {

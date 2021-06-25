@@ -21,6 +21,9 @@ spring:
       FAIL_ON_EMPTY_BEANS: false
 server:
   port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
 events:
   worker: http://order-worker/v1/events
 ---
@@ -53,8 +56,8 @@ spring:
           brokers: "PLAINTEXT://kafka:9092"
   datasource:
     hikari:
-      maximum-pool-size: 1000
-      connection-timeout: 6000
+      maximum-pool-size: 10000
+      connection-timeout: 1000
     platform: mysql
     url: jdbc:mysql://mysql:3306/orderweb
     username: mysqluser
@@ -64,12 +67,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        generate_statistics: true
-        jdbc:
-          batch_size: 50
+        generate_statistics: false
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     generate-ddl: true
 ---
 spring:

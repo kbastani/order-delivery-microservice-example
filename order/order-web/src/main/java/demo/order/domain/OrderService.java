@@ -70,12 +70,14 @@ public class OrderService extends Service<Order, Long> {
         Order currentOrder = get(order.getIdentity());
         currentOrder.setAccountId(order.getAccountId());
         currentOrder.setStatus(order.getStatus());
+        currentOrder.setLat(order.getLat());
+        currentOrder.setLon(order.getLon());
 
         if (order.getRestaurant() != null)
             currentOrder.setRestaurant(restaurantRepository
                     .findByStoreId(order.getRestaurant().getStoreId()).orElse(null));
 
-        return orderRepository.saveAndFlush(currentOrder);
+        return orderRepository.save(currentOrder);
     }
 
     /**

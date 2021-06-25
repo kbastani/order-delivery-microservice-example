@@ -6,15 +6,15 @@ import demo.order.domain.Order;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -27,132 +27,146 @@ public class OrderController {
 
     private final OrderService orderService;
     private final EventService<OrderEvent, Long> eventService;
-    private final EntityLinks entityLinks;
 
-    public OrderController(OrderService orderService, EventService<OrderEvent, Long> eventService,
-                           EntityLinks entityLinks) {
+    public OrderController(OrderService orderService, EventService<OrderEvent, Long> eventService) {
         this.orderService = orderService;
         this.eventService = eventService;
-        this.entityLinks = entityLinks;
     }
+
 
     @PostMapping(path = "/orders")
-    public ResponseEntity createOrder(@RequestBody Order order) {
+    public Mono<ResponseEntity<EntityModel<Order>>> createOrder(@RequestBody Order order) {
         return Optional.ofNullable(createOrderResource(order))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.CREATED))
-                .orElseThrow(() -> new RuntimeException("Order creation failed"));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.CREATED)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "Order creation failed"));
     }
+
 
     @PutMapping(path = "/orders/{id}")
-    public ResponseEntity updateOrder(@RequestBody Order order, @PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> updateOrder(@RequestBody Order order, @PathVariable Long id) {
         return Optional.ofNullable(updateOrderResource(id, order))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("Order update failed"));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "Order update failed"));
     }
+
 
     @RequestMapping(path = "/orders/{id}")
-    public ResponseEntity getOrder(@PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> getOrder(@PathVariable Long id) {
         return Optional.ofNullable(getOrderResource(orderService.get(id)))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
+                .orElseThrow();
     }
+
 
     @RequestMapping(path = "/orders/{id}/events")
-    public ResponseEntity getOrderEvents(@PathVariable Long id) {
+    public Mono<ResponseEntity<Events>> getOrderEvents(@PathVariable Long id) {
         return Optional.of(getOrderEventCollectionModel(id))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("Could not get order events"));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "Could not get order events"));
     }
+
 
     @RequestMapping(path = "/orders/{id}/events/{eventId}")
-    public ResponseEntity getOrderEvent(@PathVariable Long id, @PathVariable Long eventId) {
+    public Mono<ResponseEntity<OrderEvent>> getOrderEvent(@PathVariable Long id, @PathVariable Long eventId) {
         return Optional.of(getEventResource(eventId))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("Could not get order events"));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "Could not get order events"));
     }
+
 
     @PostMapping(path = "/orders/{id}/events")
-    public ResponseEntity createOrder(@PathVariable Long id, @RequestBody OrderEvent event) {
+    public Mono<ResponseEntity<EntityModel<OrderEvent>>> createOrder(@PathVariable Long id, @RequestBody OrderEvent event) {
         return Optional.ofNullable(appendEventResource(id, event))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.CREATED))
-                .orElseThrow(() -> new RuntimeException("Append order event failed"));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.CREATED)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "Append order event failed"));
     }
+
 
     @RequestMapping(path = "/orders/{id}/commands")
-    public ResponseEntity getCommands(@PathVariable Long id) {
+    public Mono<ResponseEntity<RepresentationModel>> getCommands(@PathVariable Long id) {
         return Optional.ofNullable(getCommandsCollectionModel(id))
-                .map(e -> new ResponseEntity<>(e, HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The order could not be found"));
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The order could not be found"));
     }
+
 
     @PostMapping(path = "/orders/{id}/commands/assignOrder")
-    public ResponseEntity assignOrder(@PathVariable Long id, @RequestParam(value = "restaurantId") Long restaurantId) {
+    public Mono<ResponseEntity<EntityModel<Order>>> assignOrder(@PathVariable Long id,
+                                                                @RequestParam(value = "restaurantId")
+                                                                        Long restaurantId) {
         return Optional.ofNullable(orderService.get(id)
                 .assignOrder(restaurantId))
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
+
 
     @PostMapping(path = "/orders/{id}/commands/updateOrderLocation")
-    public ResponseEntity updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") Double lat,
-                                              @RequestParam(value = "lon") Double lon) {
+    public Mono<ResponseEntity<EntityModel<Order>>> updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") Double lat,
+                                                                        @RequestParam(value = "lon") Double lon) {
         return Optional.ofNullable(orderService.get(id)
                 .updateOrderLocation(lat, lon))
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
+
 
     @PostMapping(path = "/orders/{id}/commands/prepareOrder")
-    public ResponseEntity prepareOrder(@PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> prepareOrder(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .prepareOrder())
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
+
 
     @PostMapping(path = "/orders/{id}/commands/orderReady")
-    public ResponseEntity orderReady(@PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> orderReady(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .orderReady())
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
+
 
     @PostMapping(path = "/orders/{id}/commands/orderPickedUp")
-    public ResponseEntity orderPickedUp(@PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> orderPickedUp(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .orderPickedUp())
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
+
     @PostMapping(path = "/orders/{id}/commands/deliverOrder")
-    public ResponseEntity deliverOrder(@PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> deliverOrder(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id)
                 .deliverOrder())
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
     @PostMapping(path = "/orders/{id}/commands/orderDelivered")
-    public ResponseEntity orderDelivered(@PathVariable Long id) {
+    public Mono<ResponseEntity<EntityModel<Order>>> orderDelivered(@PathVariable Long id) {
         return Optional.ofNullable(orderService.get(id).orderDelivered())
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
+
 
     @PostMapping(path = "/order/{id}/commands/updateOrderStatus")
-    public ResponseEntity updateOrderStatus(@PathVariable Long id, @RequestParam(value = "status") OrderStatus status) {
+    public Mono<ResponseEntity<EntityModel<Order>>> updateOrderStatus(@PathVariable Long id, @RequestParam(value = "status") OrderStatus status) {
         return Optional.ofNullable(orderService.get(id).updateOrderStatus(status))
-                .map(e -> new ResponseEntity<>(getOrderResource(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
+
     @RequestMapping(path = "/orders/search/findOrdersByAccountId")
-    public ResponseEntity findOrdersByAccountId(@RequestParam("accountId") Long accountId) {
+    public Mono<ResponseEntity<CollectionModel<Order>>> findOrdersByAccountId(@RequestParam("accountId") Long accountId) {
         return Optional.ofNullable(orderService.findOrdersByAccountId(accountId))
-                .map(e -> new ResponseEntity<>(new CollectionModel<Order>(e), HttpStatus.OK))
-                .orElseThrow(() -> new RuntimeException("The command could not be applied"));
+                .map(e -> Mono.just(new ResponseEntity<>(new CollectionModel<Order>(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
     /**
@@ -228,7 +242,7 @@ public class OrderController {
         try {
             method = OrderController.class.getMethod(name, Long.class);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw new BadRequestException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
         return linkTo(OrderController.class, method, id);
@@ -253,7 +267,7 @@ public class OrderController {
             order.add(linkBuilder("getOrderEvents", order.getIdentity()).withRel("events"));
         }
 
-        if(!order.hasLink("self")) {
+        if (!order.hasLink("self")) {
             // Add self link
             order.add(order.getId());
         }

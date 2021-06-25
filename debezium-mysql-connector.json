@@ -9,5 +9,5 @@
     "database.server.name": "dbserver1",
     "database.include": "orderweb",
     "database.history.kafka.bootstrap.servers": "kafka:9092",
-    "database.history.kafka.topic": "schema-changes.inventory"
+    "database.history.kafka.topic": "schema-changes.order-events"
 }

@@ -35,7 +35,7 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
 
     private Long accountId;
 
-    @OneToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Restaurant restaurant;
 
     public Order() {
@@ -48,6 +48,7 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     }
 
     @JsonProperty("orderId")
+    @Transient
     @Override
     public Long getIdentity() {
         return this.id;

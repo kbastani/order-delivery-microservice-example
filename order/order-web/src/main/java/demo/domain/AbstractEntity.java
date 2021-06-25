@@ -14,6 +14,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AbstractEntity<E extends Event, T extends Serializable> extends Aggregate<E, T> implements Serializable {
 
+    @Transient
     private T identity;
 
     @CreatedDate

@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Example;
@@ -24,15 +25,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType.HAL;
+import static org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType.HAL_FORMS;
 
 @SpringBootApplication
-@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
+@EnableHypermediaSupport(type = { HAL, HAL_FORMS })
 public class OrderWeb {
 
     public static void main(String[] args) {
         SpringApplication.run(OrderWeb.class, args);
     }
 
+    @Order(1)
     @Bean
     public CommandLineRunner commandLineRunner(RestaurantRepository restaurantRepository) {
         // Initializes the restaurant database on startup
@@ -42,9 +46,9 @@ public class OrderWeb {
 
             try {
                 restaurantRepository.saveAll(Stream.of(mapper.readValue(file, Restaurant[].class))
-                        .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
+                        .filter(restaurant -> restaurant.getCountry().equals("US"))
                         .sorted(Comparator.comparingLong(Restaurant::getStoreId))
-                        .limit(10)
+                        .limit(200)
                         .filter(restaurant -> !restaurantRepository.exists(Example.of(restaurant)))
                         .collect(Collectors.toList()));
 

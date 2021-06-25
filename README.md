@@ -37,12 +37,33 @@ API usage information for the `order-web` service can be found [here](order/READ
 
 ## Build
 
+Use the following terminal commands to build and launch the docker compose recipe for this example.
+
 ```bash
 $ mvn clean verify -DskipTests=true
-$ docker-compose up
+$ docker-compose up -d
+$ docker-compose logs -f --tail 100
 ```
 
-## Useful Commands
+### Single machine
+
+This example is a real multi-container production-ready application designed for real-time analytics at Uber's scale. For this reason, evaluating the example on a single machine requires at least _12 GB of available system memory_. Attempting to run this example using anything less than the recommended amount of system memory may cause your machine to run out of memory or result in a non-functional demo.
+
+## Usage
+
+After building and launching the docker compose recipe, you'll be able to launch a real-time dashboard of a simulated order delivery scenario using Superset.
+
+```bash
+$ open http://localhost:8088
+```
+
+Sign-in to the superset web interface using the credentials *admin/admin*. Navigate to the order delivery dashboard. To see order delivery data after first launching the simulation, you should remove the default filter for order status by removing it. This will show you all the orders with their status in real-time as they change. Also, you can set the refresh interval on the dashboard to *10s*, which is done through a configuration button at the top right of the dashboard page.
+
+## Change Data Capture
+
+This section provides you with a collection of useful commands for interacting and exploring the CDC features of this example application that are implemented with Debezium.
+
+### Useful commands
 
 Getting a shell in MySQL:
 
@@ -59,7 +80,7 @@ Listing all topics in Kafka:
 $ docker-compose exec kafka /kafka/bin/kafka-topics.sh --zookeeper zookeeper:2181 --list
 ```
 
-Reading contents of "order" topic:
+Reading contents of the "order" topic:
 
 ```
 $ docker run --tty --rm \
@@ -69,7 +90,7 @@ $ docker run --tty --rm \
     -t order
 ```
 
-Registering Debezium MySQL connector:
+Registering the Debezium MySQL connector:
 
 ```
 $ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
