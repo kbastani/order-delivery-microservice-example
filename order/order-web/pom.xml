@@ -62,7 +62,6 @@
             <groupId>org.kbastani</groupId>
             <artifactId>spring-boot-starter-data-events</artifactId>
             <version>1.0-SNAPSHOT</version>
-
         </dependency>
 
         <dependency>

@@ -1,13 +1,9 @@
 package demo.order.controller;
 
-import lombok.Getter;
-import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
-@ToString(callSuper = true)
 abstract class DomainException extends RuntimeException {
 
-  @Getter
   private final HttpStatus status;
 
   DomainException(HttpStatus status, String message) {
@@ -22,5 +18,12 @@ abstract class DomainException extends RuntimeException {
 
   public HttpStatus getStatus() {
     return status;
+  }
+
+  @Override
+  public String toString() {
+    return "DomainException{" +
+            "status=" + status +
+            "} " + super.toString();
   }
 }

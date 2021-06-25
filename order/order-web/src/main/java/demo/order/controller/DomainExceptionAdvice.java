@@ -1,6 +1,5 @@
 package demo.order.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,8 +12,10 @@ import java.util.UUID;
 import static java.lang.System.currentTimeMillis;
 
 @ControllerAdvice
-@RequiredArgsConstructor
 class DomainExceptionAdvice {
+
+    public DomainExceptionAdvice() {
+    }
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponse> handleDomainException(DomainException exc, ServerWebExchange exchange) {
