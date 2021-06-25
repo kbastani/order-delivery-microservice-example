@@ -73,12 +73,12 @@ public class LoadSimulatorApplication {
 
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
-                            .filter(restaurant -> restaurant.getCountry().equals("US"))
+                            .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
                             .sorted(Comparator.comparingInt(Restaurant::getStoreId))
-                            .limit(200)
+                            .limit(100)
                             .peek(restaurant ->
-                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 100000.0) +
-                                            100000L, 1000L, 15.0), orderServiceClient))
+                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 35000.0) +
+                                            60000L, 1000L, 15.0), orderServiceClient))
                             .collect(Collectors.toList());
 
             restaurants.forEach(restaurant -> {

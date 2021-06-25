@@ -94,7 +94,7 @@ services:
       - MYSQL_USER=mysqluser
       - MYSQL_PASSWORD=mysqlpw
     volumes:
-      - db_data:/var/lib/mysql
+     - db_data:/var/lib/mysql
       - ./mysql_init.sql:/docker-entrypoint-initdb.d/mysql_init.sql
     networks:
       - PinotNetwork

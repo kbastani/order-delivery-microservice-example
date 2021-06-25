@@ -2,13 +2,11 @@ package demo.restaurant.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 @JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
+@Table(indexes = {@Index(name = "IDX_RESTAURANT_ID", columnList = "storeId")})
 public class Restaurant {
 
     @Id

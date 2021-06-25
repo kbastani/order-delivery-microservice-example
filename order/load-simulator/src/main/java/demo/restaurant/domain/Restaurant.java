@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -30,6 +31,8 @@ public class Restaurant {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private RestaurantProperties properties;
     private final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(2);
+    private final ScheduledExecutorService newOrderScheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ExecutorService parallelEventExecutor = Executors.newFixedThreadPool(5);
     private final ExecutorService orderSchedulingRetryExecutor = Executors.newSingleThreadExecutor();
     private final ExecutorService eventProcessorRetryExecutor = Executors.newSingleThreadExecutor();
     private ScheduledFuture<?> orderScheduler;
@@ -81,7 +84,7 @@ public class Restaurant {
 
         DeliveryWorkflow workflow = deliveryScheduler
                 .addToWorkflow(DeliveryWorkflow.build(deliveryScheduler), order,
-                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(2.0)),
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(20.0)),
                         DeliveryEventType.ORDER_ASSIGNED, (orderItem) ->
                                 orderServiceClient.assignOrder(orderItem.getOrderId(), this.getStoreId()))
                 .addToWorkflow(order,
@@ -89,7 +92,7 @@ public class Restaurant {
                         DeliveryEventType.ORDER_LOCATION_UPDATED, (orderItem) ->
                                 orderServiceClient.updateOrderLocation(order.getOrderId(), latitude, longitude))
                 .addToWorkflow(order,
-                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(3.0)),
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(20.0)),
                         DeliveryEventType.ORDER_PREPARING, (orderItem) ->
                                 orderServiceClient.prepareOrder(order.getOrderId()))
                 .addToWorkflow(order,
@@ -97,11 +100,11 @@ public class Restaurant {
                         DeliveryEventType.ORDER_PREPARED, (orderItem) ->
                                 orderServiceClient.orderReady(order.getOrderId()))
                 .addToWorkflow(order,
-                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(15.0)),
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(25.0)),
                         DeliveryEventType.ORDER_PICKED_UP, (orderItem) ->
                                 orderServiceClient.orderPickedUp(order.getOrderId()))
                 .addToWorkflow(order,
-                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(15.0)),
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(25.0)),
                         DeliveryEventType.ORDER_DELIVERING, (orderItem) ->
                                 orderServiceClient.deliverOrder(order.getOrderId()));
 
@@ -113,7 +116,7 @@ public class Restaurant {
         IntStream.range(0, 20).forEachOrdered(i -> {
             final double newBearing = deliveryBearing.updateAndGet((val) -> getSimulatedRouteBearing(val, i + 1));
             workflow.addToWorkflow(order,
-                    (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(4.0)),
+                    (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(10.0)),
                     DeliveryEventType.ORDER_LOCATION_UPDATED, (orderItem) -> {
                         Order updatedOrder = orderServiceClient.get(order.getOrderId());
                         if (updatedOrder != null && updatedOrder.getLat() != null && updatedOrder.getLon() != null) {
@@ -169,7 +172,7 @@ public class Restaurant {
     }
 
     private void createOrderScheduler() {
-        this.setOrderScheduler(getScheduledExecutor().scheduleAtFixedRate(this::orderReceived,
+        this.setOrderScheduler(newOrderScheduler.scheduleAtFixedRate(this::orderReceived,
                 properties.getNewOrderTime(), properties.getNewOrderTime(), TimeUnit.MILLISECONDS));
 
         orderSchedulingRetryExecutor.submit(() -> {
@@ -191,7 +194,8 @@ public class Restaurant {
             List<DeliveryEvent> deliveryEvents = deliveryScheduler.nextFrame();
 
             if (deliveryEvents != null && deliveryEvents.size() > 0) {
-                deliveryEvents.parallelStream().forEach(event -> {
+
+                List<Callable<Order>> events = deliveryEvents.stream().map(event -> (Callable<Order>) (() -> {
                     Order order = null;
                     try {
                         order = event.getDeliveryAction().apply(event.getOrder());
@@ -202,7 +206,7 @@ public class Restaurant {
                         }
                     }
 
-                    if(order != null) {
+                    if (order != null) {
                         // Roll the schedule forward for the order if everything looks good
                         event.setOrder(order);
                         event.getDeliveryWorkflow().setCurrentOrderState(order);
@@ -214,10 +218,18 @@ public class Restaurant {
                         event.getDeliveryWorkflow().setCurrentOrderState(order);
                         event.getDeliveryWorkflow().scheduleLast();
                     }
-                });
 
-                log.info("[ORDER_EVENT]: " + this.toString() + ": " + Arrays.toString(deliveryEvents
-                        .toArray(DeliveryEvent[]::new)));
+                    log.info("[ORDER_EVENT]: " + this.toString() + ": " + Arrays.toString(deliveryEvents
+                            .toArray(DeliveryEvent[]::new)));
+
+                    return order;
+                })).collect(Collectors.toList());
+
+                try {
+                    parallelEventExecutor.invokeAll(events);
+                } catch (InterruptedException e) {
+                    log.error("Event handler task failed with error", e);
+                }
             }
         }
     }

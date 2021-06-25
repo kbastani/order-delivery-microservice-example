@@ -6,7 +6,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+import java.lang.reflect.ParameterizedType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -61,7 +61,7 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
     public Links getLinks() {
         List<Link> links = super.getLinks().stream().collect(Collectors.toList());
         links.add(getId());
-        Class<T> clazz = (Class<T>) ((ParameterizedTypeImpl)
+        Class<T> clazz = (Class<T>) ((ParameterizedType)
                 this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         links.add(getEntity().getId().withRel(new EvoInflectorLinkRelationProvider()
                 .getItemResourceRelFor(clazz)));

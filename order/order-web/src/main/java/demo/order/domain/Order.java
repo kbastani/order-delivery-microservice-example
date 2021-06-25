@@ -19,6 +19,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Entity(name = "orders")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Table(indexes = {@Index(name = "IDX_ORDER_ID", columnList = "id")})
 public class Order extends AbstractEntity<OrderEvent, Long> {
     @Id
     @GeneratedValue
@@ -35,7 +36,7 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
 
     private Long accountId;
 
-    @OneToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Restaurant restaurant;
 
     public Order() {
