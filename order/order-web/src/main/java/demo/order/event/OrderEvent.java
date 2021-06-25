@@ -1,15 +1,22 @@
 package demo.order.event;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import demo.event.Event;
-import demo.order.controller.OrderController;
-import demo.order.domain.Order;
-import demo.order.domain.OrderStatus;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Lob;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,10 +24,17 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.hateoas.Link;
 
-import javax.persistence.*;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import demo.event.Event;
+import demo.order.controller.OrderController;
+import demo.order.domain.Order;
+import demo.order.domain.OrderStatus;
 
 /**
  * The domain event {@link OrderEvent} tracks the type and state of events as applied to the {@link Order} domain
@@ -53,6 +67,8 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     private OrderStatus orderStatus;
 
     private Long aggregateId;
+
+    private String aggregateType = "Order";
 
     @Column
     private Double orderLocationLat;
@@ -175,6 +191,14 @@ public class OrderEvent extends Event<Order, OrderEventType, Long> {
     @Override
     public void setAggregateId(Long aggregateId) {
         this.aggregateId = aggregateId;
+    }
+
+    public String getAggregateType() {
+        return aggregateType;
+    }
+
+    public void setAggregateType(String aggregateType) {
+        this.aggregateType = aggregateType;
     }
 
     public Double getOrderLocationLat() {

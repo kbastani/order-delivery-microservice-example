@@ -1,0 +1,21 @@
+{
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    "database.hostname": "mysql",
+    "database.port": "3306",
+    "database.user": "root",
+    "database.password": "debezium",
+    "database.server.id": "184054",
+    "database.server.name": "dbserver1",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.order-events",
+    "table.include.list": "orderweb.order_event",
+    "transforms" : "outbox",
+    "transforms.outbox.type" : "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.table.field.event.key" : "aggregate_id",
+    "transforms.outbox.table.field.event.id" : "event_id",
+    "transforms.outbox.table.field.event.payload" : "order_payload",
+    "transforms.outbox.table.field.event.payload.id" : "aggregate_id",
+    "transforms.outbox.route.by.field" : "aggregate_type",
+    "value.converter.schemas.enable": "false"
+}
