@@ -45,8 +45,8 @@ public class LoadSimulatorApplication {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(30000))
-                .setReadTimeout(Duration.ofMillis(30000))
+                .setConnectTimeout(Duration.ofMillis(120000))
+                .setReadTimeout(Duration.ofMillis(120000))
                 .build();
     }
 
@@ -54,7 +54,7 @@ public class LoadSimulatorApplication {
     public RetryTemplate retryTemplate() {
         return RetryTemplate.builder()
                 .maxAttempts(10)
-                .exponentialBackoff(1000, 10, 10000)
+                .exponentialBackoff(1000, 10, 100000)
                 .retryOn(RestClientException.class)
                 .traversingCauses()
                 .build();

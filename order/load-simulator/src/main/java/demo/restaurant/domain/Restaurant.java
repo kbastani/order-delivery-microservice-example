@@ -7,6 +7,7 @@ import demo.order.util.GeoUtils;
 import demo.restaurant.config.RestaurantProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -115,7 +116,7 @@ public class Restaurant {
                     (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + getFutureTimeFrame(4.0)),
                     DeliveryEventType.ORDER_LOCATION_UPDATED, (orderItem) -> {
                         Order updatedOrder = orderServiceClient.get(order.getOrderId());
-                        if(updatedOrder != null && updatedOrder.getLat() != null && updatedOrder.getLon() != null) {
+                        if (updatedOrder != null && updatedOrder.getLat() != null && updatedOrder.getLon() != null) {
                             double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
                                     new double[]{updatedOrder.getLat(), updatedOrder.getLon()}, newBearing,
                                     (Math.random() / 2.0) + .25);
@@ -191,10 +192,28 @@ public class Restaurant {
 
             if (deliveryEvents != null && deliveryEvents.size() > 0) {
                 deliveryEvents.parallelStream().forEach(event -> {
-                    Order order = event.getDeliveryAction().apply(event.getOrder());
-                    event.setOrder(order);
-                    event.getDeliveryWorkflow().setCurrentOrderState(order);
-                    event.getDeliveryWorkflow().scheduleNext();
+                    Order order = null;
+                    try {
+                        order = event.getDeliveryAction().apply(event.getOrder());
+                    } catch (HttpClientErrorException e) {
+                        if (e.getStatusCode().is4xxClientError()) {
+                            // Check the order status on the server
+                            order = orderServiceClient.get(event.getOrder().getOrderId());
+                        }
+                    }
+
+                    if(order != null) {
+                        // Roll the schedule forward for the order if everything looks good
+                        event.setOrder(order);
+                        event.getDeliveryWorkflow().setCurrentOrderState(order);
+                        event.getDeliveryWorkflow().scheduleNext();
+                    } else {
+                        // Roll back the order state to the current client state and schedule the last event
+                        order = orderServiceClient.update(event.getOrder());
+                        event.setOrder(order);
+                        event.getDeliveryWorkflow().setCurrentOrderState(order);
+                        event.getDeliveryWorkflow().scheduleLast();
+                    }
                 });
 
                 log.info("[ORDER_EVENT]: " + this.toString() + ": " + Arrays.toString(deliveryEvents

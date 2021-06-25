@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 @org.springframework.stereotype.Service
+@Transactional(timeout = 6000)
 public class OrderService extends Service<Order, Long> {
 
     private final OrderRepository orderRepository;
@@ -38,7 +39,7 @@ public class OrderService extends Service<Order, Long> {
     public Order create(Order order) {
 
         // Save the order to the repository
-        order = orderRepository.saveAndFlush(order);
+        order = orderRepository.save(order);
 
         return order;
     }

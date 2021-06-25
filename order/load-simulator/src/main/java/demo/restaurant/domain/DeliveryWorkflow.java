@@ -12,6 +12,7 @@ public class DeliveryWorkflow {
     private static DeliveryScheduler scheduler;
     private Order currentOrderState;
     private ConcurrentLinkedQueue<ScheduledEvent<DeliveryEvent>> workflowEvents = new ConcurrentLinkedQueue<>();
+    private ScheduledEvent<DeliveryEvent> lastScheduledEvent;
 
     public static DeliveryWorkflow build(DeliveryScheduler scheduler) {
         DeliveryWorkflow.scheduler = scheduler;
@@ -46,8 +47,18 @@ public class DeliveryWorkflow {
         workflowEvents.offer(event);
     }
 
+    public ScheduledEvent<DeliveryEvent> scheduleLast() {
+        ScheduledEvent<DeliveryEvent> scheduledEvent = lastScheduledEvent;
+        if(scheduledEvent != null) {
+            scheduledEvent.getUpdateDeliveryTime().accept(scheduledEvent);
+            scheduler.schedule(scheduledEvent);
+        }
+        return scheduledEvent;
+    }
+
     public ScheduledEvent<DeliveryEvent> scheduleNext() {
         ScheduledEvent<DeliveryEvent> scheduledEvent = workflowEvents.poll();
+        lastScheduledEvent = scheduledEvent;
         if(scheduledEvent != null) {
             scheduledEvent.getUpdateDeliveryTime().accept(scheduledEvent);
             scheduler.schedule(scheduledEvent);
