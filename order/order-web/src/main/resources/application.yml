@@ -56,7 +56,7 @@ spring:
           brokers: "PLAINTEXT://kafka:9092"
   datasource:
     hikari:
-      maximum-pool-size: 10000
+      maximum-pool-size: 250
       connection-timeout: 1000
     platform: mysql
     url: jdbc:mysql://mysql:3306/orderweb

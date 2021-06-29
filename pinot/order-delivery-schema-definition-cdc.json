@@ -1,0 +1,81 @@
+{
+  "schemaName": "orders",
+  "primaryKeyColumns": ["orderId"],
+  "dimensionFieldSpecs": [
+    {
+      "name": "orderId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "accountId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "status",
+      "dataType": "STRING"
+    },
+    {
+      "name": "lon",
+      "dataType": "DOUBLE",
+      "defaultValue": 0.0
+    },
+    {
+      "name": "lat",
+      "dataType": "DOUBLE",
+      "defaultValue": 0.0
+    },
+    {
+      "name": "restaurantMap",
+      "dataType": "STRING",
+      "defaultValue": ""
+    },
+    {
+      "name": "restaurantId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "restaurantLon",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "restaurantLat",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "restaurantName",
+      "dataType": "STRING"
+    },
+    {
+      "name": "restaurantCity",
+      "dataType": "STRING"
+    },
+    {
+      "name": "restaurantCountry",
+      "dataType": "STRING"
+    },
+    {
+      "dataType": "BYTES",
+      "name": "location_st_point",
+      "transformFunction": "toSphericalGeography(stPoint(lon,lat))"
+    },
+    {
+      "dataType": "BYTES",
+      "name": "restaurant_st_point",
+      "transformFunction": "toSphericalGeography(stPoint(restaurantLon,restaurantLat))"
+    }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "createdAt",
+      "dataType": "LONG",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    },
+    {
+      "name": "lastModified",
+      "dataType": "LONG",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}

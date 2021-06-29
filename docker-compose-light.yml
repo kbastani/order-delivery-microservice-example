@@ -2,6 +2,9 @@ x-order-delivery-service-depends-on: &order-delivery-service-depends-on
   - mysql
   - kafka
   - zookeeper
+x-pinot-depends-on: &pinot-depends-on
+  - kafka
+  - zookeeper
 
 version: "3.7"
 
@@ -73,6 +76,15 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     links:
       - order-delivery-service
+    networks:
+      - PinotNetwork
+  pinot:
+    image: apachepinot/pinot:release-0.7.1
+    command: "QuickStart -type batch"
+    ports:
+      - "9000:9000/tcp"
+      - "8000:8000/tcp"
+    depends_on: *pinot-depends-on
     networks:
       - PinotNetwork
 

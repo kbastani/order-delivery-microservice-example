@@ -8,6 +8,46 @@
     "replication": "1",
     "replicasPerPartition": "1"
   },
+  "ingestionConfig": {
+    "transformConfigs": [
+      {
+        "columnName": "restaurantMap",
+        "transformFunction": "json_format(restaurant)"
+      },
+      {
+        "columnName": "restaurantId",
+        "transformFunction": "JSONPATHLONG(restaurantMap, '$.storeId', '0')"
+      },
+      {
+        "columnName": "restaurantLon",
+        "transformFunction": "JSONPATHDOUBLE(restaurantMap, '$.longitude', '0.0')"
+      },
+      {
+        "columnName": "restaurantLat",
+        "transformFunction": "JSONPATHDOUBLE(restaurantMap, '$.latitude', '0.0')"
+      },
+      {
+        "columnName": "restaurantName",
+        "transformFunction": "JSONPATHSTRING(restaurantMap, '$.name', '')"
+      },
+      {
+        "columnName": "restaurantCity",
+        "transformFunction": "JSONPATHSTRING(restaurantMap, '$.city', '')"
+      },
+      {
+        "columnName": "restaurantCountry",
+        "transformFunction": "JSONPATHSTRING(restaurantMap, '$.country', '')"
+      },
+      {
+        "columnName": "lat",
+        "transformFunction": "Groovy({latitude == 'null' ? 0.0: latitude}, latitude)"
+      },
+      {
+        "columnName": "lon",
+        "transformFunction": "Groovy({longitude == 'null' ? 0.0: longitude}, longitude)"
+      }
+    ]
+  },
   "tenants": {
     "broker": "DefaultTenant",
     "server": "DefaultTenant",
@@ -40,7 +80,7 @@
     "streamConfigs": {
       "streamType": "kafka",
       "stream.kafka.consumer.type": "LowLevel",
-      "stream.kafka.topic.name": "order",
+      "stream.kafka.topic.name": "debezium.Order",
       "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
       "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
       "stream.kafka.broker.list": "kafka:9092",
