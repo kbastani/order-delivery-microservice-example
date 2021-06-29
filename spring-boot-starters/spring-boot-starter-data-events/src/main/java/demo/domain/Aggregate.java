@@ -116,8 +116,8 @@ public abstract class Aggregate<E extends Event, ID extends Serializable> extend
                 .stream()
                 .collect(Collectors.toList()));
 
-        if (!super.hasLink("self"))
-            links.and(this.getLinks().getLink("self").get());
+//        if (!super.hasLink("self"))
+//            links.and(this.getLinks().getLink("self").get());
 
         return links;
     }
