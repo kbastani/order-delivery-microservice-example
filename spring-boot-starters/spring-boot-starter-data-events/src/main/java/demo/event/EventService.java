@@ -24,14 +24,6 @@ public interface EventService<T extends Event, ID extends Serializable> {
     <E extends Aggregate, S extends T> S send(S event, Link... links);
 
     /**
-     * Raises an asynchronous domain event. An {@link Event} will be applied to an entity through a chain of AMQP
-     * messages.
-     *
-     * @return a flag indicating if the {@link Event} message was sent successfully
-     */
-    <S extends T> Boolean sendAsync(S event, Link... links);
-
-    /**
      * Saves a given event entity. Use the returned instance for further operations as the save operation might have
      * changed the entity instance completely.
      *

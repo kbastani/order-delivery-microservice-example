@@ -37,13 +37,11 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
     private String eventsWorker;
 
     private final EventRepository<T, ID> eventRepository;
-    private final EventSource eventSource;
     private final RestTemplate restTemplate;
 
-    public BasicEventService(EventRepository<T, ID> eventRepository, EventSource eventSource, @LoadBalanced RestTemplate
+    public BasicEventService(EventRepository<T, ID> eventRepository, @LoadBalanced RestTemplate
             restTemplate) {
         this.eventRepository = eventRepository;
-        this.eventSource = eventSource;
         this.restTemplate = restTemplate;
     }
 
@@ -66,14 +64,6 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
         }
 
         return event;
-    }
-
-    public <S extends T> Boolean sendAsync(S event, Link... links) {
-        return eventSource.getChannel()
-                .send(MessageBuilder.withPayload(event)
-                        .setHeader("contentType", MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .setHeader("aggregateId", event.getAggregateId())
-                        .build());
     }
 
     public <S extends T> S save(S event) {

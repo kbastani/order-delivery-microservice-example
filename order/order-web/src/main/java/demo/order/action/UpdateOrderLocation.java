@@ -2,7 +2,6 @@ package demo.order.action;
 
 import demo.domain.Action;
 import demo.order.domain.Order;
-import demo.order.domain.OrderModule;
 import demo.order.domain.OrderService;
 import demo.order.event.OrderEvent;
 import demo.order.event.OrderEventType;
@@ -20,16 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UpdateOrderLocation extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final OrderService orderService;
+
+    public UpdateOrderLocation(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     public Order apply(Order order, Double lat, Double lon) {
-        OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
         order.setLat(lat);
         order.setLon(lon);
         order = orderService.update(order);
 
         try {
-            // Trigger the account connected event
-            order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_LOCATION_UPDATED, order));
+            order.appendEvent(new OrderEvent(OrderEventType.ORDER_LOCATION_UPDATED, order));
         } catch (Exception ex) {
             log.error("Could not update order location", ex);
         }

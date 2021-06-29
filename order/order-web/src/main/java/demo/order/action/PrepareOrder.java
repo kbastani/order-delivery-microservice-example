@@ -2,7 +2,6 @@ package demo.order.action;
 
 import demo.domain.Action;
 import demo.order.domain.Order;
-import demo.order.domain.OrderModule;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
@@ -19,22 +18,19 @@ import org.springframework.web.client.HttpClientErrorException;
 @Transactional
 public class PrepareOrder extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final OrderService orderService;
+
+    public PrepareOrder(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     public Order apply(Order order) {
-        try {
-            Assert.isTrue(order
-                    .getStatus() == OrderStatus.ORDER_ASSIGNED, "Order must be in an ORDER_ASSIGNED state");
-        } catch (Exception ex) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
-        }
-
-        OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
-
+        checkOrderState(order);
         order.setStatus(OrderStatus.ORDER_PREPARING);
         order = orderService.update(order);
 
         try {
-            order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_PREPARING, order));
+            order.appendEvent(new OrderEvent(OrderEventType.ORDER_PREPARING, order));
         } catch (Exception ex) {
             log.error("Could not prepare order", ex);
             order.setStatus(OrderStatus.ORDER_ASSIGNED);
@@ -42,5 +38,14 @@ public class PrepareOrder extends Action<Order> {
         }
 
         return order;
+    }
+
+    private void checkOrderState(Order order) {
+        try {
+            Assert.isTrue(order.getStatus() == OrderStatus.ORDER_ASSIGNED,
+                    String.format("Order must be in a ORDER_ASSIGNED state. {state=%s}", order.getStatus()));
+        } catch (Exception ex) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 }

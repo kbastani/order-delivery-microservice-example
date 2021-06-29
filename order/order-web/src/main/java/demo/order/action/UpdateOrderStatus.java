@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UpdateOrderStatus extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-
     private final OrderService orderService;
 
     public UpdateOrderStatus(OrderService orderService) {
@@ -26,7 +25,6 @@ public class UpdateOrderStatus extends Action<Order> {
     }
 
     public Order apply(Order order, OrderStatus orderStatus) {
-
         // Save rollback status
         OrderStatus rollbackStatus = order.getStatus();
 

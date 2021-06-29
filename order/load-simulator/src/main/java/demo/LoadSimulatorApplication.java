@@ -51,6 +51,7 @@ public class LoadSimulatorApplication {
     }
 
     @Bean
+    @Profile("docker")
     public RetryTemplate retryTemplate() {
         return RetryTemplate.builder()
                 .maxAttempts(10)
@@ -67,9 +68,6 @@ public class LoadSimulatorApplication {
 
             String file = resourceAsString(new ClassPathResource("/static/locations.json"));
             ObjectMapper mapper = new ObjectMapper();
-
-            //log.info("Waiting 60 seconds before starting the order simulation...");
-            //Thread.sleep(60000);
 
             List<Restaurant> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))

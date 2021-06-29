@@ -21,12 +21,8 @@ public class OrderService extends Service<Order, Long> {
     }
 
     public Order registerOrder(Order order) {
-
         order = create(order);
-
-        // Trigger the order creation event
-        order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_CREATED, order));
-
+        order.appendEvent(new OrderEvent(OrderEventType.ORDER_CREATED, order));
         return order;
     }
 

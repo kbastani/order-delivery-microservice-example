@@ -2,7 +2,6 @@ package demo.order.action;
 
 import demo.domain.Action;
 import demo.order.domain.Order;
-import demo.order.domain.OrderModule;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
@@ -27,19 +26,15 @@ import org.springframework.web.client.HttpClientErrorException;
 public class AssignOrder extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final RestaurantRepository restaurantRepository;
+    private final OrderService orderService;
 
-    public AssignOrder(RestaurantRepository restaurantRepository) {
+    public AssignOrder(RestaurantRepository restaurantRepository, OrderService orderService) {
         this.restaurantRepository = restaurantRepository;
+        this.orderService = orderService;
     }
 
     public Order apply(Order order, Long restaurantId) {
-        try {
-            Assert.isTrue(order.getStatus() == OrderStatus.ORDER_CREATED, "Order must be in a created state");
-        } catch (Exception ex) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
-        }
-
-        OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
+        checkOrderState(order);
 
         // Lookup the store and connect it to the order
         Restaurant restaurant = restaurantRepository.findByStoreId(restaurantId).orElse(null);
@@ -52,8 +47,7 @@ public class AssignOrder extends Action<Order> {
         order = orderService.update(order);
 
         try {
-            // Trigger the account connected event
-            order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_ASSIGNED, order));
+            order.appendEvent(new OrderEvent(OrderEventType.ORDER_ASSIGNED, order));
         } catch (Exception ex) {
             log.error("Could not assign order to restaurant", ex);
             order.setStatus(OrderStatus.ORDER_CREATED);
@@ -61,6 +55,15 @@ public class AssignOrder extends Action<Order> {
         }
 
         return order;
+    }
+
+    private void checkOrderState(Order order) {
+        try {
+            Assert.isTrue(order.getStatus() == OrderStatus.ORDER_CREATED,
+                    String.format("Order must be in a ORDER_CREATED state. {state=%s}", order.getStatus()));
+        } catch (Exception ex) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
 }

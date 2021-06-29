@@ -1,21 +1,6 @@
 spring:
   profiles:
     active: docker
-  cloud:
-    stream:
-      kafka:
-        binder:
-          auto-add-partitions: true
-      bindings:
-        output:
-          binder: kafka
-          destination: order
-          contentType: 'application/json'
-          group: order-group
-          producer:
-            partition-key-expression: headers['aggregateId']
-            partition-count: 12
-            requiredGroups: order-group
   jackson:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
@@ -32,11 +17,6 @@ spring:
     activate:
       on-profile:
         - development
-  cloud:
-    stream:
-      kafka:
-        binder:
-          brokers: "PLAINTEXT://kafka:9092"
   jpa:
     show_sql: false
     database: H2
@@ -49,11 +29,6 @@ spring:
     activate:
       on-profile:
         - docker
-  cloud:
-    stream:
-      kafka:
-        binder:
-          brokers: "PLAINTEXT://kafka:9092"
   datasource:
     hikari:
       maximum-pool-size: 250
@@ -74,7 +49,10 @@ spring:
     generate-ddl: true
 ---
 spring:
-  profiles: test
+  config:
+    activate:
+      on-profile:
+        - test
   jpa:
     show_sql: false
     database: H2
@@ -84,31 +62,3 @@ spring:
 eureka:
   client:
     enabled: false
-logging:
-  level:
-    org:
-      apache:
-        zookeeper:
-          ZooKeeper: error
-    org.apache.kafka.clients.producer.ProducerConfig: error
----
-spring:
-  profiles: cloud
-  cloud:
-    stream:
-      bindings:
-        output:
-          destination: order
-          contentType: 'application/json'
-eureka:
-  instance:
-    hostname: ${vcap.application.uris[0]:localhost}
-    nonSecurePort: 80
-    metadataMap:
-      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
-    leaseRenewalIntervalInSeconds: 5
-  client:
-    region: default
-    registryFetchIntervalSeconds: 5
-    serviceUrl:
-      defaultZone: ${vcap.services.discovery-service.credentials.uri:http://localhost:8761}/eureka/

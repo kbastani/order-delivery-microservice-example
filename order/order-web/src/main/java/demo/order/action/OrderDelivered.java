@@ -2,7 +2,6 @@ package demo.order.action;
 
 import demo.domain.Action;
 import demo.order.domain.Order;
-import demo.order.domain.OrderModule;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
@@ -25,25 +24,19 @@ import org.springframework.web.client.HttpClientErrorException;
 public class OrderDelivered extends Action<Order> {
 
     private final Logger log = LoggerFactory.getLogger(OrderDelivered.class);
+    private final OrderService orderService;
 
-    public OrderDelivered() {
+    public OrderDelivered(OrderService orderService) {
+        this.orderService = orderService;
     }
 
     public Order apply(Order order) {
-        try {
-        Assert.isTrue(order
-                .getStatus() == OrderStatus.ORDER_DELIVERING, "Order must be in an ORDER_DELIVERING state");
-        } catch (Exception ex) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
-        }
-
-        OrderService orderService = order.getModule(OrderModule.class).getDefaultService();
-
+        checkOrderState(order);
         order.setStatus(OrderStatus.ORDER_DELIVERED);
         order = orderService.update(order);
 
         try {
-            order.sendAsyncEvent(new OrderEvent(OrderEventType.ORDER_DELIVERED, order));
+            order.appendEvent(new OrderEvent(OrderEventType.ORDER_DELIVERED, order));
         } catch (Exception ex) {
             log.error("Could not complete delivery", ex);
             order.setStatus(OrderStatus.ORDER_DELIVERING);
@@ -51,5 +44,14 @@ public class OrderDelivered extends Action<Order> {
         }
 
         return order;
+    }
+
+    private void checkOrderState(Order order) {
+        try {
+            Assert.isTrue(order.getStatus() == OrderStatus.ORDER_DELIVERING,
+                    String.format("Order must be in a ORDER_DELIVERING state. {state=%s}", order.getStatus()));
+        } catch (Exception ex) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 }

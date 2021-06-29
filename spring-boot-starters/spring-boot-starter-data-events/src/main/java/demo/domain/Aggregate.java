@@ -100,11 +100,6 @@ public abstract class Aggregate<E extends Event, ID extends Serializable> extend
      * @param event is the {@link Event} to append to the {@link Aggregate} entity
      * @return the newly appended {@link Event}
      */
-
-    public boolean sendAsyncEvent(E event, Link... links) {
-        return getEventService().sendAsync(appendEvent(event), links);
-    }
-
     @Transactional
     @SuppressWarnings("unchecked")
     public E appendEvent(E event) {
@@ -121,8 +116,8 @@ public abstract class Aggregate<E extends Event, ID extends Serializable> extend
                 .stream()
                 .collect(Collectors.toList()));
 
-//        if (!super.hasLink("self"))
-//            links.and(this.getLinks().getLink("self").get());
+        if (!super.hasLink("self"))
+            links.and(this.getLinks().getLink("self").get());
 
         return links;
     }

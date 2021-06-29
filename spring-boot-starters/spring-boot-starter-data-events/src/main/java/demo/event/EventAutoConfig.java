@@ -3,7 +3,6 @@ package demo.event;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -14,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
  * @author Kenny Bastani
  */
 @Configuration
-@ConditionalOnClass({EventRepository.class, Source.class, RestTemplate.class})
+@ConditionalOnClass({EventRepository.class, RestTemplate.class})
 @ConditionalOnMissingBean(EventService.class)
 @EnableConfigurationProperties(EventProperties.class)
 public class EventAutoConfig {
@@ -29,12 +28,7 @@ public class EventAutoConfig {
 
     @SuppressWarnings("unchecked")
     @Bean
-    public EventService eventService(EventSource eventSource) {
-        return new BasicEventService(eventRepository, eventSource, restTemplate);
-    }
-
-    @Bean
-    public EventSource eventSource(Source source) {
-        return new EventSource(source.output());
+    public EventService eventService() {
+        return new BasicEventService(eventRepository, restTemplate);
     }
 }

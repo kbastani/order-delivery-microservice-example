@@ -207,8 +207,7 @@ public class OrderController {
     private EntityModel<OrderEvent> appendEventResource(Long orderId, OrderEvent event) {
         EntityModel<OrderEvent> eventResource = null;
 
-        orderService.get(orderId)
-                .sendAsyncEvent(event);
+        orderService.get(orderId).appendEvent(event);
 
         if (event != null) {
             eventResource = EntityModel.of(event,
