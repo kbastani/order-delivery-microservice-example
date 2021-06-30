@@ -35,21 +35,73 @@ API usage information for the `order-web` service can be found [here](order/READ
   - Show current deliveries by restaurant id
   - Show current deliveries by restaurant city
 
-## Build
+## Build and run
 
-Use the following terminal commands to build and launch the docker compose recipe for this example.
+JDK 16+ is required to build all the project artifacts for this example. Use the following terminal commands to build and launch a docker compose recipe for this example.
 
 ```bash
-$ mvn clean verify -DskipTests=true
-$ docker-compose up -d
-$ docker-compose logs -f --tail 100
+$ mvn clean verify
 ```
 
-### Single machine
+After you have succesfully built the project and docker containers, you can now run the example on a single machine in one of two modes.
 
-This example is a real multi-container production-ready application designed for real-time analytics at Uber's scale. For this reason, evaluating the example on a single machine requires at least _12 GB of available system memory_. Attempting to run this example using anything less than the recommended amount of system memory may cause your machine to run out of memory or result in a non-functional demo.
+The two recipes below for running this example on a single machine have very different system resource requirements. For most developers, it's recommended that you use the **light mode** recipe to get up and running without any performance issues. 
 
-## Usage
+Before running either of the modes, make sure that you create the following Docker network using the following terminal command.
+
+```bash
+$ docker network create PinotNetwork
+```
+
+### Light mode
+
+```bash
+$ docker-compose -f docker-compose-light.yml up -d
+$ docker-compose -f docker-compose-light.yml logs -f --tail 100 load-simulator
+```
+The `docker-compose-light.yml` is configured to use less containers and compute resources, but does not come with a Superset deployment that visualizes the CDC event data for order deliveries. To visualize the event data, you can use http://kepler.gl by exporting CSV datasets from queries executed in the Apache Pinot query console.
+
+#### Usage
+
+The current log output from your terminal should be targeted on the `load-simulator` application. By default, you will see a list of restaurants that are configured to start fulfilling order delivery requests. The load simulator is a high-throughput realistic state machine and conductor for driving the state of a restaurant, drivers, and order deliveries to a customer's location. Documentation on the load simulator and how it works will be made available in the future.
+
+At the point where you begin to see a flurry of log output from the `load-simulator` that tracks the state of orders and their state change events, you'll know that your cluster is fully up and running. Before we can see any of the event data being produced by the `order-delivery-service` we need to configure a Debezium connector to start sending event table updates to an Apache Kafka topic. The following shell script will fully bootstrap your cluster to enable CDC outbox messages from MySQL to Kafka, as well as configure Apache Pinot to start consuming and ingesting those events for running real-time analytical queries.
+
+```bash
+$ sh ./bootstrap-light.sh
+```
+
+After this script finishes its tasks, you will now be able to use Apache Pinot to query the real-time stream of order delivery events that are generated from MySQL. A new browser window should be opened and navigated to http://localhost:9000.
+
+To start querying data, navigate to the query console and click the `orders` table to execute your first query. If everythiing worked correctly, you should be seeing at least ten rows from the generated SQL query. Should you run into any issues, please create an issue here to get assistance.
+
+#### Kepler.gl Visualizations
+
+The SQL query below can be used to create a http://kepler.gl geospatial visualization using CSV export directly from the Pinot query console UI.
+
+```sql
+SELECT orderId as id, lat as point_latitude_2, lon as point_longitude_2, restaurantLat as point_latitude_1, restaurantLon as point_longitude_1, lastModified as start_time, status, restaurantId, accountId
+FROM orders
+WHERE ST_DISTANCE(location_st_point, ST_Point(-122.44469, 37.75680, 1)) < 6500
+LIMIT 100000
+option(skipUpsert=true)
+```
+
+Notice that in this SQL query I've disabled upserts using `skipUpsert=true`. This means that I want to see the full log of `order` events for each `orderId`. If I were to remove this option or set it to `true`, then I would only get back the most recent state of the `order` object with the primary key `orderId`. This is a very useful feature, as there are many types of analytical queries where we only want to see the current state of a single aggregate. For the purposes of a good geospatial visualization, we'll want to capture all of the geolocation updates as a driver navigates from a restaurant to a delivery location.
+
+You can play around with this query to generate different result sets. In the `WHERE` clause, I've used a Pinot UDF that only fetches order delivery data that is within a 6.5km radius of the specified GPS coordinate. _The coordinate I've provided is located at the center of San Francisco._
+
+### Heavy mode
+
+Running the example in normal mode requires at least 16GB of system memory and it's recommended that your development machine have at least 32GB of memory and at least 12 CPU cores. Please use the light mode recipe above to run the example if your system doesn't meet these resource requirements. If you have previously started the **light mode** recipe, please make sure you destroy your cluster before proceeding.
+
+```bash
+$ docker-compose -f docker-compose-light.yml down
+$ docker-compose -f docker-compose.yml up -d
+$ docker-compose -f docker-compose.yml logs -f --tail 100 load-simulator
+```
+
+#### Usage
 
 After building and launching the docker compose recipe, you'll be able to launch a real-time dashboard of a simulated order delivery scenario using Superset.
 
@@ -61,7 +113,7 @@ Sign-in to the superset web interface using the credentials *admin/admin*. Navig
 
 ## Change Data Capture
 
-This section provides you with a collection of useful commands for interacting and exploring the CDC features of this example application that are implemented with Debezium.
+This section provides you with a collection of useful commands for interacting and exploring the CDC features of this example application that are implemented with Debezium. 
 
 ### Useful commands
 
@@ -87,14 +139,14 @@ $ docker run --tty --rm \
     --network PinotNetwork \
     debezium/tooling:1.1 \
     kafkacat -b kafka:9092 -C -o beginning -q \
-    -t order
+    -t debezium.Order
 ```
 
-Registering the Debezium MySQL connector:
+Registering the Debezium MySQL connector (this is configured in the `bootstrap.sh` script):
 
 ```
 $ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
-    http://localhost:8083/connectors/orderweb/config -d @debezium-mysql-connector.json
+    http://localhost:8083/connectors/orderweb/config -d @debezium-mysql-connector-outbox.json
 ```
 
 Getting status of "orderweb" connector:
