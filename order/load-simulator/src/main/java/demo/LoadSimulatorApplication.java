@@ -10,6 +10,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
@@ -34,6 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SpringBootApplication
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
+@EnableEurekaClient
 public class LoadSimulatorApplication {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
@@ -43,6 +46,7 @@ public class LoadSimulatorApplication {
     }
 
     @Bean
+    @LoadBalanced
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
                 .setConnectTimeout(Duration.ofMillis(120000))
@@ -51,7 +55,7 @@ public class LoadSimulatorApplication {
     }
 
     @Bean
-    @Profile("docker")
+    @Profile({"docker", "development"})
     public RetryTemplate retryTemplate() {
         return RetryTemplate.builder()
                 .maxAttempts(10)
@@ -62,7 +66,7 @@ public class LoadSimulatorApplication {
     }
 
     @Bean
-    @Profile("docker")
+    @Profile({"docker", "development"})
     public CommandLineRunner commandLineRunner(OrderServiceClient orderServiceClient) {
         return (args) -> {
 

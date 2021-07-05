@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: discovery-service
+  profiles:
+    active: development
+server:
+  port: 8761
+logging:
+  level:
+    root: INFO
+    kafka.*: WARN
+    org.springframework.*: INFO
+    org.neo4j.*: INFO
+    com.memorynotfound: DEBUG
+    org.apache.kafka.*: ERROR
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+eureka:
+  instance:
+    preferIpAddress: true
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+eureka:
+  instance:
+    preferIpAddress: true
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+eureka:
+  client:
+    enabled: false

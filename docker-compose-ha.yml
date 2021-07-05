@@ -2,6 +2,7 @@ x-order-delivery-service-depends-on: &order-delivery-service-depends-on
   - mysql
   - kafka
   - zookeeper
+  - discovery-service
 x-pinot-depends-on: &pinot-depends-on
   - kafka
   - zookeeper
@@ -60,13 +61,31 @@ services:
      - ./mysql_init.sql:/docker-entrypoint-initdb.d/mysql_init.sql
     networks:
       - PinotNetwork
+  discovery-service:
+    image: discovery-service:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8761:8761/tcp"
+    restart: on-failure
+    networks:
+      - PinotNetwork
+  api-gateway:
+    image: api-gateway:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "9090:9090/tcp"
+    depends_on:
+      - discovery-service
+    restart: on-failure
+    networks:
+      - PinotNetwork
   order-delivery-service:
     image: order-web:latest
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SERVER_PORT: 8080
-    ports:
-      - "8080:8080/tcp"
+      SERVER_PORT: 0
     depends_on: *order-delivery-service-depends-on
     restart: on-failure
     networks:
@@ -75,7 +94,9 @@ services:
     image: load-simulator:latest
     environment:
       SPRING_PROFILES_ACTIVE: docker
-    links:
+      SERVER_PORT: 0
+    depends_on:
+      - discovery-service
       - order-delivery-service
     networks:
       - PinotNetwork

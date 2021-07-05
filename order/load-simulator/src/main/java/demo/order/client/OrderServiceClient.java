@@ -36,7 +36,7 @@ public class OrderServiceClient {
                               @Value("${order-service.host:localhost}") String orderServiceHostName) {
         this.restTemplate = restTemplate;
         this.retryTemplate = retryTemplate;
-        this.baseUri = "http://" + orderServiceHostName + ":8080/v1/orders";
+        this.baseUri = "http://" + orderServiceHostName + "/v1/orders";
     }
 
     public Order get(Long orderId) {

@@ -7,6 +7,7 @@ import demo.restaurant.domain.RestaurantRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
@@ -30,6 +31,7 @@ import static org.springframework.hateoas.config.EnableHypermediaSupport.Hyperme
 
 @SpringBootApplication
 @EnableHypermediaSupport(type = { HAL, HAL_FORMS })
+@EnableEurekaClient
 public class OrderWeb {
 
     public static void main(String[] args) {
