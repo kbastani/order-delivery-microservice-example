@@ -28,6 +28,7 @@ public class UpdateDriverLocation extends Action<Driver> {
     public Driver apply(Driver driver, Double lat, Double lon) {
         driver.setLat(lat);
         driver.setLon(lon);
+        driver.setEventType(DriverEventType.LOCATION_UPDATED);
         driver = driverService.update(driver);
 
         try {

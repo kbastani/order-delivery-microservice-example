@@ -2,6 +2,7 @@ package demo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import demo.config.PinotJdbcTemplate;
 import demo.restaurant.domain.Restaurant;
 import demo.restaurant.domain.RestaurantRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -40,7 +41,7 @@ public class OrderWeb {
 
     @Order(1)
     @Bean
-    public CommandLineRunner commandLineRunner(RestaurantRepository restaurantRepository) {
+    public CommandLineRunner commandLineRunner(RestaurantRepository restaurantRepository, PinotJdbcTemplate pinotJdbcTemplate) {
         // Initializes the restaurant database on startup
         return (args) -> {
             String file = resourceAsString(new ClassPathResource("/locations.json"));

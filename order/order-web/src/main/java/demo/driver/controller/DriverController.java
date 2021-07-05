@@ -105,6 +105,27 @@ public class DriverController {
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
+    @PostMapping(path = "/driver/{id}/commands/activateAccount")
+    public Mono<ResponseEntity<EntityModel<Driver>>> activateAccount(@PathVariable Long id) {
+        return Optional.ofNullable(driverService.get(id).activateAccount())
+                .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
+    }
+
+    @PostMapping(path = "/driver/{id}/commands/driverOnline")
+    public Mono<ResponseEntity<EntityModel<Driver>>> driverOnline(@PathVariable Long id) {
+        return Optional.ofNullable(driverService.get(id).driverOnline())
+                .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
+    }
+
+    @PostMapping(path = "/driver/{id}/commands/driverOffline")
+    public Mono<ResponseEntity<EntityModel<Driver>>> driverOffline(@PathVariable Long id) {
+        return Optional.ofNullable(driverService.get(id).driverOffline())
+                .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
+    }
+
     /**
      * Creates a new {@link Driver} entity and persists the result to the repository.
      *

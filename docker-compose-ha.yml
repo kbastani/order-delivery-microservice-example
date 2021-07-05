@@ -3,6 +3,7 @@ x-order-delivery-service-depends-on: &order-delivery-service-depends-on
   - kafka
   - zookeeper
   - discovery-service
+  - pinot
 x-pinot-depends-on: &pinot-depends-on
   - kafka
   - zookeeper

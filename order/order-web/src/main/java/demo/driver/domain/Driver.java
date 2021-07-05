@@ -7,10 +7,10 @@ import demo.domain.AbstractEntity;
 import demo.domain.Aggregate;
 import demo.domain.Command;
 import demo.domain.Module;
-import demo.driver.action.UpdateDriverLocation;
-import demo.driver.action.UpdateDriverStatus;
+import demo.driver.action.*;
 import demo.driver.controller.DriverController;
 import demo.driver.event.DriverEvent;
+import demo.driver.event.DriverEventType;
 import org.springframework.hateoas.Link;
 
 import javax.persistence.*;
@@ -34,6 +34,9 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
     @Enumerated(value = EnumType.STRING)
     private DriverStatus driverStatus;
 
+    @Enumerated(value = EnumType.STRING)
+    private DriverEventType eventType;
+
     @Column
     private Double lat;
 
@@ -42,6 +45,8 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
 
     public Driver() {
         driverStatus = DriverStatus.DRIVER_CREATED;
+        availabilityStatus = DriverAvailabilityStatus.DRIVER_OFFLINE;
+        activityStatus = DriverActivityStatus.ACCOUNT_PENDING;
     }
 
     @JsonProperty("driverId")
@@ -84,6 +89,14 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
         this.driverStatus = driverStatus;
     }
 
+    public DriverEventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(DriverEventType eventType) {
+        this.eventType = eventType;
+    }
+
     public Double getLat() {
         return lat;
     }
@@ -110,6 +123,24 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
     public Driver updateDriverStatus(DriverStatus driverStatus) {
         return getAction(UpdateDriverStatus.class)
                 .apply(this, driverStatus);
+    }
+
+    @Command(method = "activateAccount", controller = DriverController.class)
+    public Driver activateAccount() {
+        return getAction(ActivateAccount.class)
+                .apply(this);
+    }
+
+    @Command(method = "driverOnline", controller = DriverController.class)
+    public Driver driverOnline() {
+        return getAction(DriverOnline.class)
+                .apply(this);
+    }
+
+    @Command(method = "driverOffline", controller = DriverController.class)
+    public Driver driverOffline() {
+        return getAction(DriverOffline.class)
+                .apply(this);
     }
 
     @Override
