@@ -2,6 +2,7 @@ package demo.driver.controller;
 
 import demo.domain.BadRequestException;
 import demo.driver.domain.Driver;
+import demo.driver.domain.DriverOrderRequest;
 import demo.driver.domain.DriverService;
 import demo.driver.domain.DriverStatus;
 import demo.driver.event.DriverEvent;
@@ -98,31 +99,38 @@ public class DriverController {
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
-    @PostMapping(path = "/driver/{id}/commands/updateDriverStatus")
+    @PostMapping(path = "/drivers/{id}/commands/updateDriverStatus")
     public Mono<ResponseEntity<EntityModel<Driver>>> updateDriverStatus(@PathVariable Long id, @RequestParam(value = "status") DriverStatus status) {
         return Optional.ofNullable(driverService.get(id).updateDriverStatus(status))
                 .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
-    @PostMapping(path = "/driver/{id}/commands/activateAccount")
+    @PostMapping(path = "/drivers/{id}/commands/activateAccount")
     public Mono<ResponseEntity<EntityModel<Driver>>> activateAccount(@PathVariable Long id) {
         return Optional.ofNullable(driverService.get(id).activateAccount())
                 .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
-    @PostMapping(path = "/driver/{id}/commands/driverOnline")
+    @PostMapping(path = "/drivers/{id}/commands/driverOnline")
     public Mono<ResponseEntity<EntityModel<Driver>>> driverOnline(@PathVariable Long id) {
         return Optional.ofNullable(driverService.get(id).driverOnline())
                 .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
-    @PostMapping(path = "/driver/{id}/commands/driverOffline")
+    @PostMapping(path = "/drivers/{id}/commands/driverOffline")
     public Mono<ResponseEntity<EntityModel<Driver>>> driverOffline(@PathVariable Long id) {
         return Optional.ofNullable(driverService.get(id).driverOffline())
                 .map(e -> Mono.just(new ResponseEntity<>(getDriverResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
+    }
+
+    @RequestMapping(path = "/drivers/{id}/commands/fetchOrderRequest")
+    public Mono<ResponseEntity<DriverOrderRequest>> fetchOrderRequest(@PathVariable Long id) {
+        return Optional.ofNullable(driverService.get(id).fetchOrderRequest())
+                .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 

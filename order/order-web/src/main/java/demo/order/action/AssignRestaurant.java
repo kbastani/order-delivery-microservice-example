@@ -8,6 +8,7 @@ import demo.order.event.OrderEvent;
 import demo.order.event.OrderEventType;
 import demo.restaurant.domain.Restaurant;
 import demo.restaurant.domain.RestaurantRepository;
+import demo.util.GeoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,12 +24,12 @@ import org.springframework.web.client.HttpClientErrorException;
  */
 @Service
 @Transactional
-public class AssignOrder extends Action<Order> {
+public class AssignRestaurant extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final RestaurantRepository restaurantRepository;
     private final OrderService orderService;
 
-    public AssignOrder(RestaurantRepository restaurantRepository, OrderService orderService) {
+    public AssignRestaurant(RestaurantRepository restaurantRepository, OrderService orderService) {
         this.restaurantRepository = restaurantRepository;
         this.orderService = orderService;
     }
@@ -44,6 +45,12 @@ public class AssignOrder extends Action<Order> {
 
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.ORDER_ASSIGNED);
+        order.setDeliveryLat(restaurant.getLatitude());
+        order.setDeliveryLon(restaurant.getLongitude());
+
+        // TODO: After adding a Customer API with address resolution to geospatial coordinates, update this workflow
+        generateFakeDeliveryLocation(order, restaurant);
+
         order = orderService.update(order);
 
         try {
@@ -54,6 +61,18 @@ public class AssignOrder extends Action<Order> {
             order = orderService.update(order);
         }
 
+        return order;
+    }
+
+    private Order generateFakeDeliveryLocation(Order order, Restaurant restaurant) {
+        // Generate a random delivery location 5km-10km from restaurant since customer API is not implemented
+        double[] deliveryCoordinates = GeoUtils.findPointAtDistanceFrom(
+                new double[]{restaurant.getLatitude(), restaurant.getLongitude()},
+                (Math.PI * 2.0) * Math.random(),
+                ((Math.random() / 2.0) + .5) * 10.0);
+
+        order.setDeliveryLat(deliveryCoordinates[0]);
+        order.setDeliveryLon(deliveryCoordinates[1]);
         return order;
     }
 

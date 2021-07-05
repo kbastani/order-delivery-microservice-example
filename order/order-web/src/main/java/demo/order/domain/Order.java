@@ -36,6 +36,12 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
 
     private Long accountId;
 
+    @Column
+    private Double deliveryLat;
+
+    @Column
+    private Double deliveryLon;
+
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Restaurant restaurant;
 
@@ -100,9 +106,25 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
         this.restaurant = restaurant;
     }
 
+    public Double getDeliveryLat() {
+        return deliveryLat;
+    }
+
+    public void setDeliveryLat(Double deliveryLat) {
+        this.deliveryLat = deliveryLat;
+    }
+
+    public Double getDeliveryLon() {
+        return deliveryLon;
+    }
+
+    public void setDeliveryLon(Double deliveryLon) {
+        this.deliveryLon = deliveryLon;
+    }
+
     @Command(method = "assignOrder", controller = OrderController.class)
     public Order assignOrder(Long restaurantId) {
-        return getAction(AssignOrder.class)
+        return getAction(AssignRestaurant.class)
                 .apply(this, restaurantId);
     }
 

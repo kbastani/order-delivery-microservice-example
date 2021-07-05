@@ -69,6 +69,8 @@ public class OrderService extends Service<Order, Long> {
         currentOrder.setStatus(order.getStatus());
         currentOrder.setLat(order.getLat());
         currentOrder.setLon(order.getLon());
+        currentOrder.setDeliveryLon(order.getDeliveryLon());
+        currentOrder.setDeliveryLat(order.getDeliveryLat());
 
         if (order.getRestaurant() != null)
             currentOrder.setRestaurant(restaurantRepository

@@ -144,6 +144,12 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
                 .apply(this);
     }
 
+    @Command(method = "fetchOrderRequest", controller = DriverController.class)
+    public DriverOrderRequest fetchOrderRequest() {
+        return getAction(FetchOrderRequest.class)
+                .apply(this);
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Module<A>, A extends Aggregate<DriverEvent, Long>> T getModule() throws
