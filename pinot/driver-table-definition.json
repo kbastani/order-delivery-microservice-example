@@ -1,0 +1,65 @@
+{
+  "tableName": "drivers",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "timeColumnName": "createdAt",
+    "timeType": "MILLISECONDS",
+    "schemaName": "drivers",
+    "replication": "1",
+    "replicasPerPartition": "1"
+  },
+  "ingestionConfig": {
+    "transformConfigs": [
+      {
+        "columnName": "driverLat",
+        "transformFunction": "Groovy({lat == 'null' ? 0.0: lat}, lat)"
+      },
+      {
+        "columnName": "driverLon",
+        "transformFunction": "Groovy({lon == 'null' ? 0.0: lon}, lon)"
+      }
+    ]
+  },
+  "tenants": {
+    "broker": "DefaultTenant",
+    "server": "DefaultTenant",
+    "tagOverrideConfig": {}
+  },
+  "fieldConfigList": [
+    {
+      "name": "location_st_point",
+      "encodingType": "RAW",
+      "indexType": "H3",
+      "properties": {
+        "resolutions": "5"
+      }
+    }
+  ],
+  "tableIndexConfig": {
+    "loadMode": "MMAP",
+    "noDictionaryColumns": [
+      "location_st_point"
+    ],
+    "streamConfigs": {
+      "streamType": "kafka",
+      "stream.kafka.consumer.type": "LowLevel",
+      "stream.kafka.topic.name": "debezium.Driver",
+      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
+      "stream.kafka.broker.list": "kafka:9092",
+      "stream.kafka.zk.broker.url": "zookeeper:2181",
+      "realtime.segment.flush.threshold.time": "3600000",
+      "realtime.segment.flush.threshold.size": "50000",
+      "stream.kafka.consumer.prop.auto.offset.reset": "smallest"
+    }
+  },
+  "routing": {
+    "instanceSelectorType": "strictReplicaGroup"
+  },
+  "upsertConfig": {
+    "mode": "FULL"
+  },
+  "metadata": {
+    "customConfigs": {}
+  }
+}

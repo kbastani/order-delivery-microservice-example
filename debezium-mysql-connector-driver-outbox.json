@@ -5,7 +5,7 @@
     "database.port": "3306",
     "database.user": "root",
     "database.password": "debezium",
-    "database.server.id": "184054",
+    "database.server.id": "184055",
     "database.server.name": "dbserver1",
     "database.history.kafka.bootstrap.servers": "kafka:9092",
     "database.history.kafka.topic": "schema-changes.driver-events",

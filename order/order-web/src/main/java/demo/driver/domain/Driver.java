@@ -38,13 +38,14 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
     private DriverEventType eventType;
 
     @Column
-    private Double lat;
+    private Double lat = 0.0;
 
     @Column
-    private Double lon;
+    private Double lon = 0.0;
 
     public Driver() {
         driverStatus = DriverStatus.DRIVER_CREATED;
+        eventType = DriverEventType.DRIVER_CREATED;
         availabilityStatus = DriverAvailabilityStatus.DRIVER_OFFLINE;
         activityStatus = DriverActivityStatus.ACCOUNT_PENDING;
     }

@@ -1,0 +1,56 @@
+{
+  "schemaName": "drivers",
+  "primaryKeyColumns": ["driverId"],
+  "dimensionFieldSpecs": [
+    {
+      "name": "driverId",
+      "dataType": "LONG"
+    },
+    {
+      "name": "driverStatus",
+      "dataType": "STRING"
+    },
+    {
+      "name": "availabilityStatus",
+      "dataType": "STRING"
+    },
+    {
+      "name": "activityStatus",
+      "dataType": "STRING"
+    },
+    {
+      "name": "driverLon",
+      "dataType": "DOUBLE",
+      "defaultValue": 0.0
+    },
+    {
+      "name": "driverLat",
+      "dataType": "DOUBLE",
+      "defaultValue": 0.0
+    },
+    {
+      "name": "eventType",
+      "dataType": "STRING",
+      "defaultValue": ""
+    },
+    {
+      "dataType": "BYTES",
+      "name": "location_st_point",
+      "transformFunction": "toSphericalGeography(stPoint(driverLon,driverLat))"
+    }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "createdAt",
+      "dataType": "LONG",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    },
+    {
+      "name": "lastModified",
+      "dataType": "LONG",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}

@@ -64,6 +64,7 @@ public class DriverService extends Service<Driver, Long> {
         Driver currentDriver = get(driver.getIdentity());
         currentDriver.setDriverStatus(driver.getDriverStatus());
         currentDriver.setActivityStatus(driver.getActivityStatus());
+        currentDriver.setEventType(driver.getEventType());
         currentDriver.setAvailabilityStatus(driver.getAvailabilityStatus());
         currentDriver.setLat(driver.getLat());
         currentDriver.setLon(driver.getLon());
