@@ -1,11 +1,15 @@
 package demo.event;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 /**
  * This class auto-configures a {@link BasicEventService} bean.
@@ -16,19 +20,18 @@ import org.springframework.web.client.RestTemplate;
 @ConditionalOnClass({EventRepository.class, RestTemplate.class})
 @ConditionalOnMissingBean(EventService.class)
 @EnableConfigurationProperties(EventProperties.class)
-public class EventAutoConfig {
+public class EventAutoConfig implements BeanFactoryPostProcessor {
 
-    private EventRepository eventRepository;
-    private RestTemplate restTemplate;
+    private List<EventRepository> eventRepositories;
 
-    public EventAutoConfig(EventRepository eventRepository, RestTemplate restTemplate) {
-        this.eventRepository = eventRepository;
-        this.restTemplate = restTemplate;
+    public EventAutoConfig(List<EventRepository> eventRepositories) {
+        this.eventRepositories = eventRepositories;
     }
 
-    @SuppressWarnings("unchecked")
-    @Bean
-    public EventService eventService() {
-        return new BasicEventService(eventRepository, restTemplate);
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
+            throws BeansException {
+        eventRepositories.forEach(er -> beanFactory
+                .registerSingleton(er.getClass().getSuperclass().getSimpleName(), er));
     }
 }

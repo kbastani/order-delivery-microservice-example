@@ -40,9 +40,9 @@ public abstract class Event<T extends Aggregate, E, ID extends Serializable> ext
 
     public abstract void setEntity(T entity);
 
-    public abstract Long getAggregateId();
+    public abstract ID getAggregateId();
 
-    public abstract void setAggregateId(Long aggregateId);
+    public abstract void setAggregateId(ID aggregateId);
 
     public abstract Date getCreatedAt();
 

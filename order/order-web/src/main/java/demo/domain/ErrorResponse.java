@@ -1,4 +1,4 @@
-package demo.order.controller;
+package demo.domain;
 
 public class ErrorResponse {
   private Long timestamp;

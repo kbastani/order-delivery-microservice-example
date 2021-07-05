@@ -9,10 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -39,8 +37,7 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
     private final EventRepository<T, ID> eventRepository;
     private final RestTemplate restTemplate;
 
-    public BasicEventService(EventRepository<T, ID> eventRepository, @LoadBalanced RestTemplate
-            restTemplate) {
+    public <RT extends EventRepository> BasicEventService(RT eventRepository, @LoadBalanced RestTemplate restTemplate) {
         this.eventRepository = eventRepository;
         this.restTemplate = restTemplate;
     }
@@ -81,7 +78,7 @@ public class BasicEventService<T extends Event, ID extends Serializable> impleme
     }
 
     public <E extends Events> E find(ID entityId) {
-        return (E) new Events(entityId, eventRepository.findEventsByOrderId(entityId,
+        return (E) new Events(entityId, eventRepository.findAllByAggregateId(entityId,
                 PageRequest.of(0, Integer.MAX_VALUE))
                 .getContent());
     }

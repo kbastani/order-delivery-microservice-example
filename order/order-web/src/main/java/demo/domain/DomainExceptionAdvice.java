@@ -1,4 +1,4 @@
-package demo.order.controller;
+package demo.domain;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

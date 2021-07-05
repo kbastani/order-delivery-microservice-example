@@ -1,11 +1,12 @@
 package demo.order.controller;
 
-import demo.event.EventService;
+import demo.domain.BadRequestException;
 import demo.event.Events;
 import demo.order.domain.Order;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
 import demo.order.event.OrderEvent;
+import demo.order.event.OrderEventService;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
@@ -26,9 +27,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class OrderController {
 
     private final OrderService orderService;
-    private final EventService<OrderEvent, Long> eventService;
+    private final OrderEventService eventService;
 
-    public OrderController(OrderService orderService, EventService<OrderEvent, Long> eventService) {
+    public OrderController(OrderService orderService, OrderEventService eventService) {
         this.orderService = orderService;
         this.eventService = eventService;
     }

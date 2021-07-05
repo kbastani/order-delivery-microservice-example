@@ -17,5 +17,5 @@ import java.io.Serializable;
  */
 @NoRepositoryBean
 public interface EventRepository<E extends Event, ID extends Serializable> extends PagingAndSortingRepository<E, ID> {
-    Page<E> findEventsByOrderId(@Param("orderId") ID orderId, Pageable pageable);
+    Page<E> findAllByAggregateId(@Param("aggregateId") ID aggregateId, Pageable pageable);
 }

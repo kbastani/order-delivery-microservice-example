@@ -37,12 +37,12 @@ public class EmptyEvent extends Event {
     }
 
     @Override
-    public Long getAggregateId() {
+    public Serializable getAggregateId() {
         return null;
     }
 
     @Override
-    public void setAggregateId(Long aggregateId) {
+    public void setAggregateId(Serializable aggregateId) {
 
     }
 
