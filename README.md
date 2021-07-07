@@ -97,6 +97,7 @@ Running the example in normal mode requires at least 16GB of system memory and i
 
 ```bash
 $ docker-compose -f docker-compose-light.yml down
+$ docker volume create --name=db_data
 $ docker-compose -f docker-compose.yml up -d
 $ docker-compose -f docker-compose.yml logs -f --tail 100 load-simulator
 ```
