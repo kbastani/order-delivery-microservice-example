@@ -50,6 +50,7 @@ public class FetchOrderRequest extends Action<Driver> {
     /**
      * This method is used to find an available order request from a restaurant that has not yet been claimed by
      * another driver.
+     *
      * @return a {@link DriverOrderRequest} with the {@link Order} details
      */
     private DriverOrderRequest findOrderRequest(Driver driver) {
@@ -59,13 +60,14 @@ public class FetchOrderRequest extends Action<Driver> {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            orders = pinotJdbcTemplate.executeQuery(String.format("SELECT orderId, \n" +
-                    "lastModified as preparedAt, (now() - lastModified) as preparedAge, \n" +
-                    "ST_DISTANCE(location_st_point, ST_Point(%s, %s, 1)) as distance\n" +
-                    "FROM orders\n" +
-                    "WHERE distance < 15000.0 AND status = 'ORDER_PREPARED'\n" +
-                    "ORDER BY preparedAge DESC, distance ASC\n" +
-                    "LIMIT 10", driver.getLon(), driver.getLat()));
+            orders = pinotJdbcTemplate.executeQuery(String.format("""
+                    SELECT orderId,\s
+                    lastModified as preparedAt, (now() - lastModified) as preparedAge,\s
+                    ST_DISTANCE(location_st_point, ST_Point(%s, %s, 1)) as distance
+                    FROM orders
+                    WHERE distance < 15000.0 AND status = 'ORDER_PREPARED'
+                    ORDER BY preparedAge DESC, distance ASC
+                    LIMIT 10""", driver.getLon(), driver.getLat()));
             nearbyOrdersArr = objectMapper.readValue(objectMapper.writeValueAsString(orders), NearbyPreparedOrder[].class);
         } catch (SQLException | JsonProcessingException ex) {
             throw new RuntimeException("Could not fetch nearby orders from Pinot datasource", ex);
@@ -81,7 +83,7 @@ public class FetchOrderRequest extends Action<Driver> {
 
         DriverOrderRequest result = null;
 
-        if(selectedOrder != null) {
+        if (selectedOrder != null) {
             result = new DriverOrderRequest(orderService.get(selectedOrder.getOrderId()));
         }
 
