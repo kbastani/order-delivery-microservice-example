@@ -153,17 +153,17 @@ Create a connector for the `order_events` table.
 
 ```
 $ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
-    http://localhost:8083/connectors/order/config -d @debezium-mysql-connector-order-outbox-order.json
+    http://localhost:8083/connectors/order/config -d @debezium-mysql-connector-order-outbox.json
 ```
 
 Getting status of "order" connector:
 
 ```
-$ curl -i -X GET -H "Accept:application/json" -H  "Content-Type:application/json" \
-    http://localhost:8083/connectors/order/status
+$ curl -i -X GET -H "Accept:application/json" -H  "Content-Type:application/json" \   
+    http://localhost:8083/connectors/order/status 
 ```
 
-Create a connector for the `driver_events` table.
+Create a connector for the `driver_events` table:
 
 ```
 $ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
@@ -174,7 +174,7 @@ Getting status of "driver" connector:
 
 ```
 $ curl -i -X GET -H "Accept:application/json" -H  "Content-Type:application/json" \
-    http://localhost:8083/connectors/driver/status
+    http://localhost:8083/connectors/driver/status 
 ```
 
 It's possible that the MySQL database may have too many active connections for the Debezium connectors to properly start. If this is the case, simply restart the Debezium Connect container.
@@ -184,8 +184,7 @@ It's possible that the MySQL database may have too many active connections for t
 $ docker-compose -f docker-compose-light.yml restart connect
 ```
 
-When the container is started and ready, recreate the `order` and driver` connectors.
-
+When the container is started and ready, recreate the `order` and driver` connectors using the `curl` commands above.
 
 ## License
 
