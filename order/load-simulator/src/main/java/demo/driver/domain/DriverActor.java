@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 public class DriverActor {
@@ -110,8 +111,13 @@ public class DriverActor {
         DriverWorkflow workflow = DriverWorkflow.build(deliveryScheduler);
         workflow.setActive(true);
 
+        AtomicInteger pickupIterations = new AtomicInteger();
+        double currentPickupDistance = GeoUtils.distance(driver.getLat(), driver.getLon(), driver.getOrder().getLat(),
+                driver.getOrder().getLon(), DistanceUnit.KILOMETERS);
+        pickupIterations.set((int) (currentPickupDistance / .2));
+
         // Simulate the driver delivery location updates on the way to a randomized customer location
-        IntStream.range(0, 10).forEachOrdered(i ->
+        IntStream.range(0, pickupIterations.get()).forEachOrdered(i ->
                 workflow.addToWorkflow(this,
                         (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
                         DriverEventType.LOCATION_UPDATED, (driverItem) -> {
@@ -126,7 +132,7 @@ public class DriverActor {
 
                             double pickupDistance = GeoUtils.distance(driver.getLat(), driver.getLon(), driver.getOrder().getLat(),
                                     driver.getOrder().getLon(), DistanceUnit.KILOMETERS);
-                            double pickupDistanceIncrement = (pickupDistance / (10.0 - (double) i));
+                            double pickupDistanceIncrement = (pickupDistance / ((double)pickupIterations.get() - (double) i));
 
                             double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
                                     new double[]{driver.getLat(), driver.getLon()}, pickupBearing, pickupDistanceIncrement);
@@ -135,6 +141,8 @@ public class DriverActor {
                             driver.setOrder(currentOrder);
                             return driver;
                         }));
+
+        final AtomicInteger deliveryIterations = new AtomicInteger();
 
         workflow.addToWorkflow(this,
                 (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
@@ -145,10 +153,40 @@ public class DriverActor {
                 (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
                 DriverEventType.ORDER_DELIVERING, (driverItem) -> {
                     driver.setOrder(orderServiceClient.deliverOrder(driver.getOrderId()));
+                    double deliveryDistance = GeoUtils.distance(driver.getLat(), driver.getLon(),
+                            driver.getOrder().getDeliveryLat(), driver.getOrder().getDeliveryLon(),
+                            DistanceUnit.KILOMETERS);
+                    deliveryIterations.set((int) (deliveryDistance / .2));
+                    addDriverDeliveryRouteWorkflow(workflow, deliveryIterations);
                     return driver;
                 });
 
-        IntStream.range(0, 10).forEachOrdered(i ->
+        addOrderDeliveredWorkflow(workflow);
+
+        currentWorkflow = workflow;
+
+        workflow.execute();
+    }
+
+    private void addOrderDeliveredWorkflow(DriverWorkflow workflow) {
+        workflow.addToWorkflow(this,
+                (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
+                DriverEventType.ORDER_DELIVERED, (driverItem) -> {
+                    Order currentOrder = orderServiceClient.get(driver.getOrderId());
+                    if (currentOrder.getStatus() != OrderStatus.ORDER_DELIVERED) {
+                        orderServiceClient.orderDelivered(driver.getOrderId());
+                    } else {
+                        driver = driverServiceClient.get(driver.getDriverId());
+                        driver.setActivityStatus("DRIVER_WAITING");
+                        driver = driverServiceClient.update(driver);
+                    }
+
+                    return driver;
+                });
+    }
+
+    private void addDriverDeliveryRouteWorkflow(DriverWorkflow workflow, AtomicInteger atomicInteger) {
+        IntStream.range(0, atomicInteger.get()).forEachOrdered(i ->
                 workflow.addToWorkflow(this,
                         (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
                         DriverEventType.LOCATION_UPDATED, (driverItem) -> {
@@ -163,7 +201,7 @@ public class DriverActor {
                             double deliveryDistance = GeoUtils.distance(driver.getLat(), driver.getLon(),
                                     driver.getOrder().getDeliveryLat(), driver.getOrder().getDeliveryLon(),
                                     DistanceUnit.KILOMETERS);
-                            double deliveryDistanceIncrement = (deliveryDistance / (10.0 - (double) i));
+                            double deliveryDistanceIncrement = (deliveryDistance / ((double)atomicInteger.get() - (double) i));
 
                             double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
                                     new double[]{driver.getLat(), driver.getLon()}, deliveryBearing,
@@ -180,24 +218,7 @@ public class DriverActor {
                             return driver;
                         }));
 
-        workflow.addToWorkflow(this,
-                (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
-                DriverEventType.ORDER_DELIVERED, (driverItem) -> {
-                    Order currentOrder = orderServiceClient.get(driver.getOrderId());
-                    if (currentOrder.getStatus() != OrderStatus.ORDER_DELIVERED) {
-                        orderServiceClient.orderDelivered(driver.getOrderId());
-                    } else {
-                        driver = driverServiceClient.get(driver.getDriverId());
-                        driver.setActivityStatus("DRIVER_WAITING");
-                        driver = driverServiceClient.update(driver);
-                    }
-
-                    return driver;
-                });
-
-        currentWorkflow = workflow;
-
-        workflow.execute();
+        addOrderDeliveredWorkflow(workflow);
     }
 
     private long getFutureTimeFrame(double timeWindowRate) {
