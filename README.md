@@ -91,7 +91,7 @@ LIMIT 100000
 option(skipUpsert=true)
 ```
 
-Notice that in this SQL query I've disabled upserts using `skipUpsert=true`. This means that I want to see the full log of `order` events for each `orderId`. If I were to remove this option or set it to `true`, then I would only get back the most recent state of the `order` object with the primary key `orderId`. This is a very useful feature, as there are many types of analytical queries where we only want to see the current state of a single aggregate. For the purposes of a good geospatial visualization, we'll want to capture all of the geolocation updates as a driver navigates from a restaurant to a delivery location.
+Notice that in this SQL query I've disabled upserts using `skipUpsert=true`. This means that I want to see the full log of `order` events for each `orderId`. If I were to remove this option or set it to `false`, then I would only get back the most recent state of the `order` object with the primary key `orderId`. This is a very useful feature, as there are many types of analytical queries where we only want to see the current state of a single aggregate. For the purposes of a good geospatial visualization, we'll want to capture all of the geolocation updates as a driver navigates from a restaurant to a delivery location.
 
 You can play around with this query to generate different result sets. In the `WHERE` clause, I've used a Pinot UDF that only fetches order delivery data that is within a 6.5km radius of the specified GPS coordinate. _The coordinate I've provided is located at the center of San Francisco._
 
