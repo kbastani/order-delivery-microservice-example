@@ -149,17 +149,43 @@ $ docker run --tty --rm \
 
 Registering the Debezium MySQL connector (this is configured in the `bootstrap.sh` script):
 
+Create a connector for the `order_events` table.
+
 ```
 $ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
-    http://localhost:8083/connectors/orderweb/config -d @debezium-mysql-connector-outbox.json
+    http://localhost:8083/connectors/order/config -d @debezium-mysql-connector-order-outbox-order.json
 ```
 
-Getting status of "orderweb" connector:
+Getting status of "order" connector:
 
 ```
 $ curl -i -X GET -H "Accept:application/json" -H  "Content-Type:application/json" \
-    http://localhost:8083/connectors/orderweb/status
+    http://localhost:8083/connectors/order/status
 ```
+
+Create a connector for the `driver_events` table.
+
+```
+$ curl -i -X PUT -H "Accept:application/json" -H  "Content-Type:application/json" \
+    http://localhost:8083/connectors/driver/config -d @debezium-mysql-connector-driver-outbox.json
+```
+
+Getting status of "driver" connector:
+
+```
+$ curl -i -X GET -H "Accept:application/json" -H  "Content-Type:application/json" \
+    http://localhost:8083/connectors/driver/status
+```
+
+It's possible that the MySQL database may have too many active connections for the Debezium connectors to properly start. If this is the case, simply restart the Debezium Connect container.
+
+```
+# docker-compose exec mysql bash -c 'mysql -u root -p$MYSQL_ROOT_PASSWORD orderweb -e "SET GLOBAL max_connections = 10000;"'
+$ docker-compose -f docker-compose-light.yml restart connect
+```
+
+When the container is started and ready, recreate the `order` and driver` connectors.
+
 
 ## License
 
