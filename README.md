@@ -91,6 +91,8 @@ Notice that in this SQL query I've disabled upserts using `skipUpsert=true`. Thi
 
 You can play around with this query to generate different result sets. In the `WHERE` clause, I've used a Pinot UDF that only fetches order delivery data that is within a 6.5km radius of the specified GPS coordinate. _The coordinate I've provided is located at the center of San Francisco._
 
+![](https://i.imgur.com/DfgI12F.gif)
+
 ### Heavy mode
 
 Running the example in normal mode requires at least 16GB of system memory and it's recommended that your development machine have at least 32GB of memory and at least 12 CPU cores. Please use the light mode recipe above to run the example if your system doesn't meet these resource requirements. If you have previously started the **light mode** recipe, please make sure you destroy your cluster before proceeding.
