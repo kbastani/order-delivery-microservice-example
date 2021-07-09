@@ -99,6 +99,7 @@ services:
     depends_on:
       - discovery-service
       - order-delivery-service
+    restart: on-failure
     networks:
       - PinotNetwork
   pinot:

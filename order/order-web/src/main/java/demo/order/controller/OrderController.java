@@ -101,6 +101,16 @@ public class OrderController {
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
 
+    @PostMapping(path = "/orders/{id}/commands/assignDriver")
+    public Mono<ResponseEntity<EntityModel<Order>>> assignDriver(@PathVariable Long id,
+                                                                @RequestParam(value = "driverId")
+                                                                        Long driverId) {
+        return Optional.ofNullable(orderService.get(id)
+                .assignDriver(driverId))
+                .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
+                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
+    }
+
 
     @PostMapping(path = "/orders/{id}/commands/updateOrderLocation")
     public Mono<ResponseEntity<EntityModel<Order>>> updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") Double lat,

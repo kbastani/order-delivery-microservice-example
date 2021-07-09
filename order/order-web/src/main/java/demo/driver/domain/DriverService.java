@@ -30,8 +30,11 @@ public class DriverService extends Service<Driver, Long> {
      * @return the newly created {@link Driver}
      */
     public Driver create(Driver driver) {
-
         // Save the driver to the repository
+        driver.setDriverStatus(DriverStatus.DRIVER_CREATED);
+        driver.setEventType(DriverEventType.DRIVER_CREATED);
+        driver.setAvailabilityStatus(DriverAvailabilityStatus.DRIVER_OFFLINE);
+        driver.setActivityStatus(DriverActivityStatus.ACCOUNT_PENDING);
         driver = driverRepository.save(driver);
 
         return driver;
@@ -62,6 +65,7 @@ public class DriverService extends Service<Driver, Long> {
                 "The driver with the supplied id does not exist");
 
         Driver currentDriver = get(driver.getIdentity());
+        currentDriver.setOrderId(driver.getOrderId());
         currentDriver.setDriverStatus(driver.getDriverStatus());
         currentDriver.setActivityStatus(driver.getActivityStatus());
         currentDriver.setEventType(driver.getEventType());

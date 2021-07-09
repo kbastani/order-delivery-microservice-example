@@ -56,6 +56,7 @@ public class OrderWeb {
                         .collect(Collectors.toList()));
 
                 System.out.println(Arrays.toString(restaurantRepository.findAll().toArray(new Restaurant[]{})));
+
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }

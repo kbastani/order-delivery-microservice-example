@@ -36,6 +36,8 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
 
     private Long accountId;
 
+    private Long driverId;
+
     @Column
     private Double deliveryLat;
 
@@ -122,6 +124,14 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
         this.deliveryLon = deliveryLon;
     }
 
+    public Long getDriverId() {
+        return driverId;
+    }
+
+    public void setDriverId(Long driverId) {
+        this.driverId = driverId;
+    }
+
     @Command(method = "assignOrder", controller = OrderController.class)
     public Order assignOrder(Long restaurantId) {
         return getAction(AssignRestaurant.class)
@@ -144,6 +154,12 @@ public class Order extends AbstractEntity<OrderEvent, Long> {
     public Order orderReady() {
         return getAction(OrderReady.class)
                 .apply(this);
+    }
+
+    @Command(method = "assignDriver", controller = OrderController.class)
+    public Order assignDriver(Long driverId) {
+        return getAction(AssignDriver.class)
+                .apply(this, driverId);
     }
 
     @Command(method = "orderPickedUp", controller = OrderController.class)

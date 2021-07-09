@@ -1,6 +1,11 @@
 package demo.order.action;
 
 import demo.domain.Action;
+import demo.driver.domain.Driver;
+import demo.driver.domain.DriverActivityStatus;
+import demo.driver.domain.DriverService;
+import demo.driver.event.DriverEvent;
+import demo.driver.event.DriverEventType;
 import demo.order.domain.Order;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
@@ -25,18 +30,23 @@ public class OrderDelivered extends Action<Order> {
 
     private final Logger log = LoggerFactory.getLogger(OrderDelivered.class);
     private final OrderService orderService;
+    private final DriverService driverService;
 
-    public OrderDelivered(OrderService orderService) {
+    public OrderDelivered(OrderService orderService, DriverService driverService) {
         this.orderService = orderService;
+        this.driverService = driverService;
     }
 
     public Order apply(Order order) {
         checkOrderState(order);
         order.setStatus(OrderStatus.ORDER_DELIVERED);
+        Driver driver = driverService.get(order.getDriverId());
         order = orderService.update(order);
+        driver.setActivityStatus(DriverActivityStatus.DRIVER_WAITING);
 
         try {
             order.appendEvent(new OrderEvent(OrderEventType.ORDER_DELIVERED, order));
+            driver.appendEvent(new DriverEvent(DriverEventType.ORDER_DELIVERED, driver));
         } catch (Exception ex) {
             log.error("Could not complete delivery", ex);
             order.setStatus(OrderStatus.ORDER_DELIVERING);

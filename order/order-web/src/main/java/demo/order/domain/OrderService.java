@@ -64,19 +64,20 @@ public class OrderService extends Service<Order, Long> {
         Assert.state(orderRepository.existsById(order.getIdentity()),
                 "The order with the supplied id does not exist");
 
-        Order currentOrder = get(order.getIdentity());
-        currentOrder.setAccountId(order.getAccountId());
-        currentOrder.setStatus(order.getStatus());
-        currentOrder.setLat(order.getLat());
-        currentOrder.setLon(order.getLon());
-        currentOrder.setDeliveryLon(order.getDeliveryLon());
-        currentOrder.setDeliveryLat(order.getDeliveryLat());
+//        Order currentOrder = get(order.getIdentity());
+//        currentOrder.setDriverId(order.getDriverId());
+//        currentOrder.setAccountId(order.getAccountId());
+//        currentOrder.setStatus(order.getStatus());
+//        currentOrder.setLat(order.getLat());
+//        currentOrder.setLon(order.getLon());
+//        currentOrder.setDeliveryLon(order.getDeliveryLon());
+//        currentOrder.setDeliveryLat(order.getDeliveryLat());
 
         if (order.getRestaurant() != null)
-            currentOrder.setRestaurant(restaurantRepository
+            order.setRestaurant(restaurantRepository
                     .findByStoreId(order.getRestaurant().getStoreId()).orElse(null));
 
-        return orderRepository.save(currentOrder);
+        return orderRepository.save(order);
     }
 
     /**

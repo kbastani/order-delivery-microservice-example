@@ -94,4 +94,14 @@ public class Track<T> {
     public Integer getOrders() {
         return orderRequests;
     }
+
+    @Override
+    public String toString() {
+        return "Track{" +
+                "log=" + log +
+                ", position=" + position +
+                ", maxPosition=" + maxPosition +
+                ", orderRequests=" + orderRequests +
+                '}';
+    }
 }

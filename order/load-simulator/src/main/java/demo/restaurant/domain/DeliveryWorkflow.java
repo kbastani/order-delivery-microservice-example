@@ -9,14 +9,15 @@ import java.util.function.Function;
 
 public class DeliveryWorkflow {
 
-    private static DeliveryScheduler scheduler;
+    private DeliveryScheduler scheduler;
     private Order currentOrderState;
     private ConcurrentLinkedQueue<ScheduledEvent<DeliveryEvent>> workflowEvents = new ConcurrentLinkedQueue<>();
     private ScheduledEvent<DeliveryEvent> lastScheduledEvent;
 
     public static DeliveryWorkflow build(DeliveryScheduler scheduler) {
-        DeliveryWorkflow.scheduler = scheduler;
-        return new DeliveryWorkflow();
+        DeliveryWorkflow workflow = new DeliveryWorkflow();
+        workflow.setScheduler(scheduler);
+        return workflow;
     }
 
     /**
@@ -72,5 +73,9 @@ public class DeliveryWorkflow {
 
     public void setCurrentOrderState(Order currentOrderState) {
         this.currentOrderState = currentOrderState;
+    }
+
+    public void setScheduler(DeliveryScheduler scheduler) {
+        this.scheduler = scheduler;
     }
 }

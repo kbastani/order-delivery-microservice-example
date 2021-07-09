@@ -43,6 +43,8 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
     @Column
     private Double lon = 0.0;
 
+    private Long orderId;
+
     public Driver() {
         driverStatus = DriverStatus.DRIVER_CREATED;
         eventType = DriverEventType.DRIVER_CREATED;
@@ -112,6 +114,14 @@ public class Driver extends AbstractEntity<DriverEvent, Long> {
 
     public void setLon(Double lon) {
         this.lon = lon;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     @Command(method = "updateDriverLocation", controller = DriverController.class)

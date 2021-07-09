@@ -1,9 +1,13 @@
 package demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import demo.order.client.OrderServiceClient;
+import demo.driver.domain.Driver;
+import demo.driver.domain.DriverProperties;
+import demo.order.client.*;
+import demo.driver.domain.DriverActor;
 import demo.restaurant.config.RestaurantProperties;
 import demo.restaurant.domain.Restaurant;
+import demo.restaurant.domain.RestaurantActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -67,25 +71,53 @@ public class LoadSimulatorApplication {
 
     @Bean
     @Profile({"docker", "development"})
-    public CommandLineRunner commandLineRunner(OrderServiceClient orderServiceClient) {
+    public CommandLineRunner commandLineRunner(OrderServiceClient orderServiceClient,
+                                               DriverServiceClient driverServiceClient) {
         return (args) -> {
 
-            String file = resourceAsString(new ClassPathResource("/static/locations.json"));
+            String file = resourceAsString(new ClassPathResource("/locations.json"));
             ObjectMapper mapper = new ObjectMapper();
 
-            List<Restaurant> restaurants =
+            // Create restaurants
+            List<RestaurantActor> restaurants =
                     Stream.of(mapper.readValue(file, Restaurant[].class))
                             .filter(restaurant -> restaurant.getCity().equals("San Francisco"))
                             .sorted(Comparator.comparingInt(Restaurant::getStoreId))
                             .limit(50)
-                            .peek(restaurant ->
-                                    restaurant.init(new RestaurantProperties(Math.round(Math.random() * 35000.0) +
-                                            60000L, 1000L, 15.0), orderServiceClient))
+                            .map(restaurant -> {
+                                RestaurantActor restaurantActor = new RestaurantActor();
+                                restaurantActor.setRestaurant(restaurant);
+                                restaurantActor.init(new RestaurantProperties(Math.round(Math.random() * 35000.0) +
+                                        60000L, 1000L, 15.0), orderServiceClient);
+                                return restaurantActor;
+                            })
                             .collect(Collectors.toList());
 
-            restaurants.forEach(restaurant -> {
-                System.out.println(restaurant.toString());
-                restaurant.open();
+            // Create drivers
+            List<DriverActor> drivers = restaurants.stream()
+                    .map(restaurantActor -> {
+                        // Create one new driver per restaurant
+                        Driver driver = driverServiceClient.create(new Driver());
+                        driver = driverServiceClient.activateAccount(driver.getDriverId());
+                        driver = driverServiceClient.driverOnline(driver.getDriverId());
+                        driver = driverServiceClient.updateDriverLocation(driver.getDriverId(),
+                                restaurantActor.getRestaurant().getLatitude(),
+                                restaurantActor.getRestaurant().getLongitude());
+                        DriverActor driverActor = new DriverActor(new DriverProperties(
+                                5000L, 1000L, 15.0));
+                        driverActor.setDriver(driver);
+                        driverActor.init(driverServiceClient, orderServiceClient);
+                        return driverActor;
+                    }).collect(Collectors.toList());
+
+            restaurants.forEach(restaurantActor -> {
+                System.out.println(restaurantActor.toString());
+                restaurantActor.open();
+            });
+
+            drivers.forEach(driverActor -> {
+                System.out.println(driverActor.toString());
+                driverActor.open();
             });
         };
     }

@@ -12,8 +12,8 @@ public class Order {
     private Date lastModified;
     private Double lat;
     private Double lon;
-    private Double customerLat;
-    private Double customerLon;
+    private Double deliveryLat;
+    private Double deliveryLon;
     private Long accountId;
 
     public Order() {
@@ -65,20 +65,20 @@ public class Order {
         this.lon = lon;
     }
 
-    public Double getCustomerLat() {
-        return customerLat;
+    public Double getDeliveryLat() {
+        return deliveryLat;
     }
 
-    public void setCustomerLat(Double customerLat) {
-        this.customerLat = customerLat;
+    public void setDeliveryLat(Double deliveryLat) {
+        this.deliveryLat = deliveryLat;
     }
 
-    public Double getCustomerLon() {
-        return customerLon;
+    public Double getDeliveryLon() {
+        return deliveryLon;
     }
 
-    public void setCustomerLon(Double customerLon) {
-        this.customerLon = customerLon;
+    public void setDeliveryLon(Double deliveryLon) {
+        this.deliveryLon = deliveryLon;
     }
 
     public Date getCreatedAt() {
@@ -106,8 +106,8 @@ public class Order {
                 ", lastModified=" + lastModified +
                 ", lat=" + lat +
                 ", lon=" + lon +
-                ", customerLat=" + customerLat +
-                ", customerLon=" + customerLon +
+                ", customerLat=" + deliveryLat +
+                ", customerLon=" + deliveryLon +
                 ", accountId=" + accountId +
                 '}';
     }

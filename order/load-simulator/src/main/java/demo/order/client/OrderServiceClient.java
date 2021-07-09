@@ -128,6 +128,21 @@ public class OrderServiceClient {
         return result;
     }
 
+    public Order assignDriver(Long orderId, Long driverId) {
+        Order result;
+        try {
+            result = restTemplate.postForObject(UriTemplate.of(baseUri + "/{id}/commands/assignDriver{?driverId}")
+                    .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
+                    .with("driverId", TemplateVariable.VariableType.REQUEST_PARAM)
+                    .expand(orderId, driverId), null, Order.class);
+        } catch (RestClientResponseException ex) {
+            log.error("Assign driver to order failed", ex);
+            throw new IllegalStateException(getHttpStatusMessage(ex), ex);
+        }
+
+        return result;
+    }
+
     public Order prepareOrder(Long orderId) {
         Order result;
         try {

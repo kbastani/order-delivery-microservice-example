@@ -66,7 +66,7 @@ public class FetchOrderRequest extends Action<Driver> {
                     ST_DISTANCE(location_st_point, ST_Point(%s, %s, 1)) as distance
                     FROM orders
                     WHERE distance < 15000.0 AND status = 'ORDER_PREPARED'
-                    ORDER BY preparedAge DESC, distance ASC
+                    ORDER BY distance ASC
                     LIMIT 10""", driver.getLon(), driver.getLat()));
             nearbyOrdersArr = objectMapper.readValue(objectMapper.writeValueAsString(orders), NearbyPreparedOrder[].class);
         } catch (SQLException | JsonProcessingException ex) {

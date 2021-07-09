@@ -1,6 +1,10 @@
 package demo.order.action;
 
 import demo.domain.Action;
+import demo.driver.domain.Driver;
+import demo.driver.domain.DriverService;
+import demo.driver.event.DriverEvent;
+import demo.driver.event.DriverEventType;
 import demo.order.domain.Order;
 import demo.order.domain.OrderService;
 import demo.order.domain.OrderStatus;
@@ -20,21 +24,26 @@ public class OrderPickedUp extends Action<Order> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final OrderService orderService;
+    private final DriverService driverService;
 
-    public OrderPickedUp(OrderService orderService) {
+    public OrderPickedUp(OrderService orderService, DriverService driverService) {
         this.orderService = orderService;
+        this.driverService = driverService;
     }
 
     public Order apply(Order order) {
         checkOrderState(order);
+
+        Driver driver = driverService.get(order.getDriverId());
         order.setStatus(OrderStatus.ORDER_PICKED_UP);
         order = orderService.update(order);
 
         try {
             order.appendEvent(new OrderEvent(OrderEventType.ORDER_PICKED_UP, order));
+            driver.appendEvent(new DriverEvent(DriverEventType.ORDER_PICKED_UP, driver));
         } catch (Exception ex) {
             log.error("Could not pick up prepared order from restaurant", ex);
-            order.setStatus(OrderStatus.ORDER_PREPARED);
+            order.setStatus(OrderStatus.DRIVER_ASSIGNED);
             order = orderService.update(order);
         }
 
@@ -43,8 +52,8 @@ public class OrderPickedUp extends Action<Order> {
 
     private void checkOrderState(Order order) {
         try {
-            Assert.isTrue(order.getStatus() == OrderStatus.ORDER_PREPARED,
-                    String.format("Order must be in a ORDER_PREPARED state. {state=%s}", order.getStatus()));
+            Assert.isTrue(order.getStatus() == OrderStatus.DRIVER_ASSIGNED,
+                    String.format("Order must be in a DRIVER_ASSIGNED state. {state=%s}", order.getStatus()));
         } catch (Exception ex) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
