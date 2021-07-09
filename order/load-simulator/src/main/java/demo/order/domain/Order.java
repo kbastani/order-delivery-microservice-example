@@ -15,6 +15,7 @@ public class Order {
     private Double deliveryLat;
     private Double deliveryLon;
     private Long accountId;
+    private Long driverId;
 
     public Order() {
         this.status = OrderStatus.ORDER_CREATED;
@@ -97,6 +98,14 @@ public class Order {
         this.lastModified = lastModified;
     }
 
+    public Long getDriverId() {
+        return driverId;
+    }
+
+    public void setDriverId(Long driverId) {
+        this.driverId = driverId;
+    }
+
     @Override
     public String toString() {
         return "Order{" +
@@ -106,9 +115,10 @@ public class Order {
                 ", lastModified=" + lastModified +
                 ", lat=" + lat +
                 ", lon=" + lon +
-                ", customerLat=" + deliveryLat +
-                ", customerLon=" + deliveryLon +
+                ", deliveryLat=" + deliveryLat +
+                ", deliveryLon=" + deliveryLon +
                 ", accountId=" + accountId +
+                ", driverId=" + driverId +
                 '}';
     }
 }

@@ -131,7 +131,7 @@ public class DriverController {
     public Mono<ResponseEntity<DriverOrderRequest>> fetchOrderRequest(@PathVariable Long id) {
         return Optional.ofNullable(driverService.get(id).fetchOrderRequest())
                 .map(e -> Mono.just(new ResponseEntity<>(e, HttpStatus.OK)))
-                .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
+                .orElse(Mono.just(new ResponseEntity<>(null, HttpStatus.OK)));
     }
 
     /**

@@ -4,11 +4,12 @@ import demo.domain.Service;
 import demo.driver.event.DriverEvent;
 import demo.driver.event.DriverEventType;
 import demo.driver.repository.DriverRepository;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 @org.springframework.stereotype.Service
-@Transactional(timeout = 6000)
+@Transactional(isolation = Isolation.READ_COMMITTED)
 public class DriverService extends Service<Driver, Long> {
 
     private final DriverRepository driverRepository;
@@ -56,7 +57,6 @@ public class DriverService extends Service<Driver, Long> {
      * @param driver is the {@link Driver} containing updated fields
      * @return the updated {@link Driver} entity
      */
-    @Transactional
     public Driver update(Driver driver) {
         Assert.notNull(driver.getIdentity(), "Driver id must be present in the resource URL");
         Assert.notNull(driver, "Driver request body cannot be null");
@@ -64,16 +64,16 @@ public class DriverService extends Service<Driver, Long> {
         Assert.state(driverRepository.existsById(driver.getIdentity()),
                 "The driver with the supplied id does not exist");
 
-        Driver currentDriver = get(driver.getIdentity());
-        currentDriver.setOrderId(driver.getOrderId());
-        currentDriver.setDriverStatus(driver.getDriverStatus());
-        currentDriver.setActivityStatus(driver.getActivityStatus());
-        currentDriver.setEventType(driver.getEventType());
-        currentDriver.setAvailabilityStatus(driver.getAvailabilityStatus());
-        currentDriver.setLat(driver.getLat());
-        currentDriver.setLon(driver.getLon());
+//        Driver currentDriver = get(driver.getIdentity());
+//        currentDriver.setOrderId(driver.getOrderId());
+//        currentDriver.setDriverStatus(driver.getDriverStatus());
+//        currentDriver.setActivityStatus(driver.getActivityStatus());
+//        currentDriver.setEventType(driver.getEventType());
+//        currentDriver.setAvailabilityStatus(driver.getAvailabilityStatus());
+//        currentDriver.setLat(driver.getLat());
+//        currentDriver.setLon(driver.getLon());
 
-        return driverRepository.save(currentDriver);
+        return driverRepository.save(driver);
     }
 
     /**

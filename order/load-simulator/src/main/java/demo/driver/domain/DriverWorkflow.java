@@ -12,6 +12,7 @@ public class DriverWorkflow {
     private DriverActor currentDriverState;
     private ConcurrentLinkedQueue<ScheduledEvent<DriverEvent>> workflowEvents = new ConcurrentLinkedQueue<>();
     private ScheduledEvent<DriverEvent> lastScheduledEvent;
+    private boolean isActive = false;
 
     public static DriverWorkflow build(DriverScheduler scheduler) {
         DriverWorkflow workflow = new DriverWorkflow();
@@ -23,6 +24,7 @@ public class DriverWorkflow {
      * Executes the workflow from the first event, and schedules subsequent events after each step is completed.
      */
     public void execute() {
+        this.setActive(true);
         scheduler.schedule(this);
     }
 
@@ -76,5 +78,13 @@ public class DriverWorkflow {
 
     public void setScheduler(DriverScheduler scheduler) {
         this.scheduler = scheduler;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

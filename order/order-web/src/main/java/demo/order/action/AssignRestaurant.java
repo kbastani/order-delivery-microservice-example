@@ -8,6 +8,7 @@ import demo.order.event.OrderEvent;
 import demo.order.event.OrderEventType;
 import demo.restaurant.domain.Restaurant;
 import demo.restaurant.domain.RestaurantRepository;
+import demo.util.DistanceUnit;
 import demo.util.GeoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Connects an {@link Order} to an Account.
@@ -28,6 +33,7 @@ public class AssignRestaurant extends Action<Order> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final RestaurantRepository restaurantRepository;
     private final OrderService orderService;
+    private List<Restaurant> restaurantList;
 
     public AssignRestaurant(RestaurantRepository restaurantRepository, OrderService orderService) {
         this.restaurantRepository = restaurantRepository;
@@ -45,12 +51,9 @@ public class AssignRestaurant extends Action<Order> {
 
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.ORDER_ASSIGNED);
-        order.setDeliveryLat(restaurant.getLatitude());
-        order.setDeliveryLon(restaurant.getLongitude());
 
         // TODO: After adding a Customer API with address resolution to geospatial coordinates, update this workflow
         generateFakeDeliveryLocation(order, restaurant);
-
         order = orderService.update(order);
 
         try {
@@ -64,16 +67,36 @@ public class AssignRestaurant extends Action<Order> {
         return order;
     }
 
-    private Order generateFakeDeliveryLocation(Order order, Restaurant restaurant) {
-        // Generate a random delivery location 5km-10km from restaurant since customer API is not implemented
-        double[] deliveryCoordinates = GeoUtils.findPointAtDistanceFrom(
-                new double[]{restaurant.getLatitude(), restaurant.getLongitude()},
-                (Math.PI * 2.0) * Math.random(),
-                ((Math.random() / 2.0) + .5) * 10.0);
+    private void generateFakeDeliveryLocation(Order order, Restaurant restaurant) {
+        // Use a nearby restaurant location as the delivery coordinate so the driver doesn't drive into an ocean
+        if (restaurantList == null)
+            restaurantList = restaurantRepository.findAll();
 
-        order.setDeliveryLat(deliveryCoordinates[0]);
-        order.setDeliveryLon(deliveryCoordinates[1]);
-        return order;
+        Restaurant nearbyRestaurant = restaurantList.stream()
+                .filter(r -> !r.getStoreId().equals(restaurant.getStoreId()) &&
+                        r.getCity().equals(restaurant.getCity()))
+                .filter(r -> GeoUtils.distance(r.getLatitude(), r.getLongitude(),
+                        restaurant.getLatitude(), restaurant.getLongitude(), DistanceUnit.KILOMETERS) < 15)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), collected -> {
+                    Collections.shuffle(collected);
+                    return collected.stream();
+                }))
+                .findFirst()
+                .orElse(null);
+
+        if (nearbyRestaurant == null) {
+            // Generate a random delivery location 5km-10km from restaurant since customer API is not implemented
+            double[] deliveryCoordinates = GeoUtils.findPointAtDistanceFrom(
+                    new double[]{restaurant.getLatitude(), restaurant.getLongitude()},
+                    (Math.PI * 2.0) * Math.random(),
+                    ((Math.random() / 2.0) + .5) * 5.0);
+
+            order.setDeliveryLat(deliveryCoordinates[0]);
+            order.setDeliveryLon(deliveryCoordinates[1]);
+        } else {
+            order.setDeliveryLat(nearbyRestaurant.getLatitude());
+            order.setDeliveryLon(nearbyRestaurant.getLongitude());
+        }
     }
 
     private void checkOrderState(Order order) {

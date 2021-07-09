@@ -167,8 +167,8 @@ public class DriverServiceClient {
                             .with("id", TemplateVariable.VariableType.PATH_VARIABLE)
                             .expand(driverId), DriverOrderRequest.class);
         } catch (RestClientResponseException ex) {
-            log.error("Could not fetch nearby order request", ex);
-            throw new IllegalStateException(getHttpStatusMessage(ex), ex);
+            log.trace("Could not fetch nearby order request", ex);
+            result = null;
         }
 
         return result;

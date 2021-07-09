@@ -62,7 +62,7 @@ public class LoadSimulatorApplication {
     @Profile({"docker", "development"})
     public RetryTemplate retryTemplate() {
         return RetryTemplate.builder()
-                .maxAttempts(10)
+                .maxAttempts(3)
                 .exponentialBackoff(1000, 10, 100000)
                 .retryOn(RestClientException.class)
                 .traversingCauses()

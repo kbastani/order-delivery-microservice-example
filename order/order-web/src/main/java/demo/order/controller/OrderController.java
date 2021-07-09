@@ -13,6 +13,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/v1")
+@Transactional
 public class OrderController {
 
     private final OrderService orderService;
@@ -105,12 +107,11 @@ public class OrderController {
     public Mono<ResponseEntity<EntityModel<Order>>> assignDriver(@PathVariable Long id,
                                                                 @RequestParam(value = "driverId")
                                                                         Long driverId) {
-        return Optional.ofNullable(orderService.get(id)
-                .assignDriver(driverId))
+
+        return Optional.ofNullable(orderService.get(id).assignDriver(driverId))
                 .map(e -> Mono.just(new ResponseEntity<>(getOrderResource(e), HttpStatus.OK)))
                 .orElseThrow(() -> new BadRequestException(HttpStatus.BAD_REQUEST, "The command could not be applied"));
     }
-
 
     @PostMapping(path = "/orders/{id}/commands/updateOrderLocation")
     public Mono<ResponseEntity<EntityModel<Order>>> updateOrderLocation(@PathVariable Long id, @RequestParam(value = "lat") Double lat,

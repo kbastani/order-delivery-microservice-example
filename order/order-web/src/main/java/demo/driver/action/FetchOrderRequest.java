@@ -19,6 +19,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +60,8 @@ public class FetchOrderRequest extends Action<Driver> {
         List<Map<String, Object>> orders = null;
         ObjectMapper objectMapper = new ObjectMapper();
 
+        DriverOrderRequest result = null;
+
         try {
             orders = pinotJdbcTemplate.executeQuery(String.format("""
                     SELECT orderId,\s
@@ -73,18 +76,30 @@ public class FetchOrderRequest extends Action<Driver> {
             throw new RuntimeException("Could not fetch nearby orders from Pinot datasource", ex);
         }
 
-        List<NearbyPreparedOrder> preparedOrders = Stream.of(nearbyOrdersArr).collect(Collectors.toList());
+        try {
+            List<NearbyPreparedOrder> preparedOrders = Stream.of(nearbyOrdersArr).collect(Collectors.toList());
 
-        // Check the current state of the top order and return the DriverOrderRequest
-        NearbyPreparedOrder selectedOrder = preparedOrders.stream()
-                .filter(o -> orderService.get(o.getOrderId()).getStatus() == OrderStatus.ORDER_PREPARED)
-                .findFirst()
-                .orElse(null);
+            // Check the current state of the top order and return the DriverOrderRequest
+            NearbyPreparedOrder selectedOrder = preparedOrders.stream()
+                    .filter(o -> {
+                        Order currentOrder = orderService.get(o.getOrderId());
+                        return currentOrder.getStatus() == OrderStatus.ORDER_PREPARED &&
+                                Optional.ofNullable(currentOrder.getDriverId())
+                                        .map(id -> !id.equals(driver.getIdentity()))
+                                        .orElse(true);
+                    })
+                    .findFirst()
+                    .orElse(null);
 
-        DriverOrderRequest result = null;
-
-        if (selectedOrder != null) {
-            result = new DriverOrderRequest(orderService.get(selectedOrder.getOrderId()));
+            if (selectedOrder != null) {
+                Order order = orderService.get(selectedOrder.getOrderId());
+                order.setDriverId(driver.getIdentity());
+                order = orderService.update(order);
+                result = new DriverOrderRequest(order);
+            }
+        } catch (Exception ex) {
+            log.error("Error fetching order", ex);
+            throw new RuntimeException("Could not fetch order", ex);
         }
 
         return result;

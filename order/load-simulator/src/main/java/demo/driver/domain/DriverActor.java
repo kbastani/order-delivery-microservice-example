@@ -3,6 +3,7 @@ package demo.driver.domain;
 import demo.order.client.DriverServiceClient;
 import demo.order.client.OrderServiceClient;
 import demo.order.domain.Order;
+import demo.order.domain.OrderStatus;
 import demo.order.util.DistanceUnit;
 import demo.order.util.GeoUtils;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class DriverActor {
     private DriverServiceClient driverServiceClient;
     private OrderServiceClient orderServiceClient;
     private Driver driver;
+    private DriverWorkflow currentWorkflow;
 
     public DriverActor(DriverProperties properties) {
         this.properties = properties;
@@ -59,47 +61,72 @@ public class DriverActor {
             try {
                 orderRequest = driverServiceClient.fetchOrderRequest(driver.getDriverId());
             } catch (Exception ex) {
-                log.info(String.format("Driver{id=%s} could not fetch order: ",
+                log.trace(String.format("Driver{id=%s} could not fetch order: ",
                         driver.getDriverId()) + ex.getMessage());
             }
 
             if (orderRequest != null) {
                 try {
-                    Order order = orderServiceClient.assignDriver(orderRequest.getOrderId(), driver.getDriverId());
-                    this.driver = driverServiceClient.get(driver.getDriverId());
-                    driver.setOrder(order);
-                    driver.setOrderId(order.getOrderId());
-                    executeDriverWorkflow();
+                    if (orderServiceClient.get(orderRequest.getOrderId()).getStatus() == OrderStatus.ORDER_PREPARED) {
+                        Order order = orderServiceClient.assignDriver(orderRequest.getOrderId(), driver.getDriverId());
+                        this.driver = driverServiceClient.get(driver.getDriverId());
+                        driver.setOrder(order);
+                        driver.setOrderId(order.getOrderId());
+
+                        if (orderServiceClient.get(orderRequest.getOrderId()).getDriverId().equals(driver.getDriverId())) {
+                            executeDriverWorkflow();
+                        } else {
+                            throw new RuntimeException("Order has been assigned to another driver");
+                        }
+                    }
                 } catch (Exception ex) {
+                    this.driver = driverServiceClient.get(driver.getDriverId());
+                    if (!driver.getActivityStatus().equals("DRIVER_WAITING")) {
+                        driver.setActivityStatus("DRIVER_WAITING");
+                        driverServiceClient.update(driver);
+                    }
                     // Driver is in an invalid state or the order was already claimed
                     log.info(String.format("Driver{id=%s} could not fetch order: ",
                             driver.getDriverId()) + ex.getMessage());
                 }
             }
+        } else {
+            if (driver.getOrderId() != null && !orderServiceClient.get(driver.getOrderId()).getDriverId()
+                    .equals(driver.getDriverId())) {
+                if (currentWorkflow != null) {
+                    currentWorkflow.setActive(false);
+                }
+                driver.setActivityStatus("DRIVER_WAITING");
+                driverServiceClient.update(driver);
+            }
         }
     }
 
     private void executeDriverWorkflow() {
+        if (currentWorkflow != null) {
+            currentWorkflow.setActive(false);
+        }
         // Schedule the order pickup and delivery
         DriverWorkflow workflow = DriverWorkflow.build(deliveryScheduler);
-
-        double pickupBearing = Math.toRadians(GeoUtils.bearing(driver.getLat(), driver.getLon(),
-                driver.getOrder().getLat(),
-                driver.getOrder().getLon()));
-        int pickupIterations = (int) Math.round(Math.random() * 10.0) + 10;
-        double pickupDistanceIncrement = GeoUtils.distance(driver.getOrder().getLat(),
-                driver.getOrder().getLon(), driver.getLat(), driver.getLon(), DistanceUnit.KILOMETERS) /
-                (double) pickupIterations;
+        workflow.setActive(true);
 
         // Simulate the driver delivery location updates on the way to a randomized customer location
-        IntStream.range(0, pickupIterations).forEachOrdered(i ->
+        IntStream.range(0, 10).forEachOrdered(i ->
                 workflow.addToWorkflow(this,
-                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 5),
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
                         DriverEventType.LOCATION_UPDATED, (driverItem) -> {
                             Driver currentDriver = driverServiceClient.get(this.getDriver().getDriverId());
                             Order currentOrder = orderServiceClient.get(this.getDriver().getOrderId());
                             currentDriver.setOrder(currentOrder);
                             setDriver(currentDriver);
+
+                            double pickupBearing = Math.toRadians(GeoUtils.bearing(driver.getLat(), driver.getLon(),
+                                    driver.getOrder().getLat(),
+                                    driver.getOrder().getLon()));
+
+                            double pickupDistance = GeoUtils.distance(driver.getLat(), driver.getLon(), driver.getOrder().getLat(),
+                                    driver.getOrder().getLon(), DistanceUnit.KILOMETERS);
+                            double pickupDistanceIncrement = (pickupDistance / (10.0 - (double) i));
 
                             double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
                                     new double[]{driver.getLat(), driver.getLon()}, pickupBearing, pickupDistanceIncrement);
@@ -121,41 +148,54 @@ public class DriverActor {
                     return driver;
                 });
 
-        double deliveryBearing = Math.toRadians(GeoUtils.bearing(driver.getLat(), driver.getLon(),
-                driver.getOrder().getDeliveryLat(),
-                driver.getOrder().getDeliveryLon()));
-        int deliveryIterations = (int) Math.round(Math.random() * 10.0) + 10;
-        double deliveryDistanceIncrement = GeoUtils.distance(driver.getLat(), driver.getLon(),
-                driver.getOrder().getDeliveryLat(), driver.getOrder().getDeliveryLon(),
-                DistanceUnit.KILOMETERS) / (double) deliveryIterations;
-
-        IntStream.range(0, deliveryIterations).forEachOrdered(i ->
+        IntStream.range(0, 10).forEachOrdered(i ->
                 workflow.addToWorkflow(this,
-                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 5),
+                        (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
                         DriverEventType.LOCATION_UPDATED, (driverItem) -> {
-                            Driver currentDriver = driverServiceClient.get(this.getDriver().getDriverId());
-                            Order currentOrder = driver.getOrder();
+                            Driver currentDriver = driverServiceClient.get(driver.getDriverId());
+                            Order currentOrder = orderServiceClient.get(driver.getOrderId());
                             currentDriver.setOrder(currentOrder);
-                            setDriver(currentDriver);
+                            driver = currentDriver;
+
+                            double deliveryBearing = Math.toRadians(GeoUtils.bearing(driver.getLat(), driver.getLon(),
+                                    driver.getOrder().getDeliveryLat(),
+                                    driver.getOrder().getDeliveryLon()));
+                            double deliveryDistance = GeoUtils.distance(driver.getLat(), driver.getLon(),
+                                    driver.getOrder().getDeliveryLat(), driver.getOrder().getDeliveryLon(),
+                                    DistanceUnit.KILOMETERS);
+                            double deliveryDistanceIncrement = (deliveryDistance / (10.0 - (double) i));
 
                             double[] newDriverPosition = GeoUtils.findPointAtDistanceFrom(
                                     new double[]{driver.getLat(), driver.getLon()}, deliveryBearing,
                                     deliveryDistanceIncrement);
+
                             driver = driverServiceClient.updateDriverLocation(driver.getDriverId(),
                                     newDriverPosition[0], newDriverPosition[1]);
+
                             currentOrder = orderServiceClient.updateOrderLocation(driver.getOrderId(),
                                     newDriverPosition[0], newDriverPosition[1]);
+
                             driver.setOrder(currentOrder);
+
                             return driver;
                         }));
 
         workflow.addToWorkflow(this,
                 (event) -> event.setDeliveryTime(deliveryScheduler.getPosition() + 2),
                 DriverEventType.ORDER_DELIVERED, (driverItem) -> {
-                    orderServiceClient.orderDelivered(driver.getOrderId());
-                    driver = driverServiceClient.get(driver.getDriverId());
+                    Order currentOrder = orderServiceClient.get(driver.getOrderId());
+                    if (currentOrder.getStatus() != OrderStatus.ORDER_DELIVERED) {
+                        orderServiceClient.orderDelivered(driver.getOrderId());
+                    } else {
+                        driver = driverServiceClient.get(driver.getDriverId());
+                        driver.setActivityStatus("DRIVER_WAITING");
+                        driver = driverServiceClient.update(driver);
+                    }
+
                     return driver;
                 });
+
+        currentWorkflow = workflow;
 
         workflow.execute();
     }
@@ -212,15 +252,17 @@ public class DriverActor {
 
             if (deliveryEvents != null && deliveryEvents.size() > 0) {
                 deliveryEvents.forEach(event -> {
-                    Driver driver = event.getDriverAction().apply(event.getDriver());
+                    if (event.getDriverWorkflow().isActive()) {
+                        Driver driver = event.getDriverAction().apply(event.getDriver());
 
-                    // Roll the schedule forward for the driver if everything looks good
-                    event.setDriver(driver);
-                    event.getDriverWorkflow().setCurrentDriverState(this);
-                    event.getDriverWorkflow().scheduleNext();
+                        // Roll the schedule forward for the driver if everything looks good
+                        event.setDriver(driver);
+                        event.getDriverWorkflow().setCurrentDriverState(this);
+                        event.getDriverWorkflow().scheduleNext();
 
-                    log.info("[DRIVER_EVENT]: " + this.toString() + ": " + Arrays.toString(deliveryEvents
-                            .toArray(DriverEvent[]::new)));
+                        log.info("[DRIVER_EVENT]: " + this.toString() + ": " + Arrays.toString(deliveryEvents
+                                .toArray(DriverEvent[]::new)));
+                    }
                 });
             }
         }

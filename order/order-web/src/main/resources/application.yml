@@ -47,20 +47,23 @@ spring:
     hikari:
       maximum-pool-size: 250
       connection-timeout: 1000
-    platform: mysql
     url: jdbc:mysql://mysql:3306/orderweb
     username: mysqluser
     password: mysqlpw
-    initialization-mode: always
   jpa:
     properties:
       hibernate:
         format_sql: true
         generate_statistics: false
+        dialect: org.hibernate.dialect.MySQL57Dialect
     hibernate:
       ddl-auto: update
     show-sql: false
     generate-ddl: true
+  sql:
+    init:
+      platform: mysql
+      mode: always
 eureka:
   instance:
     prefer-ip-address: true
