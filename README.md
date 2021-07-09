@@ -91,7 +91,7 @@ Notice that in this SQL query I've disabled upserts using `skipUpsert=true`. Thi
 
 You can play around with this query to generate different result sets. In the `WHERE` clause, I've used a Pinot UDF that only fetches order delivery data that is within a 6.5km radius of the specified GPS coordinate. _The coordinate I've provided is located at the center of San Francisco._
 
-![](https://i.imgur.com/DfgI12F.gif)
+![](https://i.imgur.com/UOnBLys.gif)
 
 ### Heavy mode
 
