@@ -38,6 +38,10 @@ API usage information for the `order-web` service can be found [here](order/READ
 - Real-time geospatial dashboard of current deliveries
   - Show current deliveries by restaurant id
   - Show current deliveries by restaurant city
+  
+## System architecture
+
+![Order Delivery Microservice Example Architecture](https://imgur.com/BgsNVsC.png)
 
 ## Build and run
 
